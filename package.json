@@ -1,0 +1,20 @@
+{
+  "name": "tarino",
+  "version": "1.0.0",
+  "description": "A tar implementation with Node.js.",
+  "main": "tarino.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/stpettersens/tarino.git"
+  },
+  "keywords": [
+    "tar",
+    "archive",
+    "utility",
+    "module"
+  ],
+  "license": "MIT"
+}
