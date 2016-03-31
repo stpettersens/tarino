@@ -16,5 +16,6 @@
     "utility",
     "module"
   ],
+  "author": "Sam Saint-Pettersen <s.stpettersen+github@gmail.com>",
   "license": "MIT"
 }
