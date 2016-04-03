@@ -13,7 +13,7 @@ const path = require('path')
 const zlib = require('zlib')
 
 const NC = String.fromCharCode(0)
-const PADDING = 1029
+const EOF_PADDING = 1029
 
 function decToPaddedOctal (num, length) {
   let octal = parseInt(num, 10).toString(8)
@@ -87,7 +87,7 @@ function writeTarEntries (tarname, entries, callback) {
       writeChecksum(entries[i].part, header, function(data) {
         fs.appendFileSync(tarname, data.toString())
         if (i === entries.length - 1) {
-          fs.appendFileSync(tarname, padData(PADDING))
+          fs.appendFileSync(tarname, padData(EOF_PADDING))
         }
       })
     })
@@ -128,7 +128,7 @@ module.exports.createTar = function (tarname, filename, options) {
       if (filename.length < 100) {
         writeTarEntry(tarname, filename, function (header) {
           writeChecksum(tarname, header, function () {
-            fs.appendFileSync(tarname, padData(PADDING))
+            fs.appendFileSync(tarname, padData(EOF_PADDING))
           })
         })
       } else {
