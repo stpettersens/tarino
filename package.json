@@ -14,7 +14,9 @@
     "tar",
     "archive",
     "utility",
-    "module"
+    "module",
+    "cli",
+    "tool"
   ],
   "author": "Sam Saint-Pettersen <s.stpettersen+github@gmail.com>",
   "license": "MIT"
