@@ -9,7 +9,7 @@
 'use strict'
 
 const fs = require('fs')
-const path = require('path')
+// const path = require('path')
 const zlib = require('zlib')
 
 const NC = String.fromCharCode(0)
@@ -65,7 +65,7 @@ function writeTarEntry (tarname, filename, callback) {
   let tar = fs.createWriteStream(tarname, {start: 0, flags: 'w'})
   let header = `${filename}${padData(101 - filename.length)}` // (a)
   header += `0100777${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
-  header += `000000${NC} ${type}${padData(257-156)}ustar${NC}00${padData(512-264)}` // (g, h, i)
+  header += `000000${NC} ${type}${padData(257 - 156)}ustar${NC}00${padData(512 - 264)}` // (g, h, i)
   let data = `${contents}${padData(320)}` // !!! was 512, 323, 238, 512
   tar.write(header + data)
   tar.close()
@@ -76,15 +76,19 @@ function writeChecksum (tarname, header, callback) {
   let tar = fs.createWriteStream(tarname, {start: 148, flags: 'r+'})
   tar.write(calcChecksum(header))
   tar.close()
-  fs.readFile(tarname, function(err, data) {
+  fs.readFile(tarname, function (err, data) {
+    if (err) {
+      console.warn('tarino: Error writing checksum on archive.')
+      console.log(err)
+    }
     return callback(data)
   })
 }
 
 function writeTarEntries (tarname, entries, callback) {
-  for(let i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i++) {
     writeTarEntry(entries[i].part, entries[i].file, function (header) {
-      writeChecksum(entries[i].part, header, function(data) {
+      writeChecksum(entries[i].part, header, function (data) {
         fs.appendFileSync(tarname, data.toString())
         if (i === entries.length - 1) {
           fs.appendFileSync(tarname, padData(EOF_PADDING))
@@ -118,13 +122,12 @@ module.exports.createTar = function (tarname, filename, options) {
         if (fn.length < 100) {
           return {part: tarname.replace(/.tar$/, `.${++i}`), file: fn}
         } else {
-          throw e
+          throw Error
         }
       })
       fs.closeSync(fs.openSync(tarname, 'w'))
       writeTarEntries(tarname, entries)
-    }
-    else {
+    } else {
       if (filename.length < 100) {
         writeTarEntry(tarname, filename, function (header) {
           writeChecksum(tarname, header, function () {
@@ -132,11 +135,10 @@ module.exports.createTar = function (tarname, filename, options) {
           })
         })
       } else {
-        throw e
+        throw Error
       }
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e.stack)
   }
 }
