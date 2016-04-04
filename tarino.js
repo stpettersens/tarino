@@ -13,7 +13,7 @@ const fs = require('fs')
 const zlib = require('zlib')
 
 const NC = String.fromCharCode(0)
-const EOF_PADDING = 1029
+const EOF_PADDING = 512
 
 function decToPaddedOctal (num, length) {
   let octal = parseInt(num, 10).toString(8)
@@ -30,6 +30,17 @@ function padData (length) {
     padding += NC
   }
   return padding
+}
+
+function writePaddedData (data) {
+  let eof = EOF_PADDING
+  let m = 1
+  while (eof < data.length) {
+    eof = eof * m
+    if (data.length <= eof) break
+    m++
+  }
+  return data + padData(eof - (data.length - 1)) 
 }
 
 function calcChecksum (header) {
@@ -66,7 +77,7 @@ function writeTarEntry (tarname, filename, callback) {
   let header = `${filename}${padData(101 - filename.length)}` // (a)
   header += `0100777${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
   header += `000000${NC} ${type}${padData(257 - 156)}ustar${NC}00${padData(512 - 264)}` // (g, h, i)
-  let data = `${contents}${padData(320)}` // was 512
+  let data = `${writePaddedData(contents)}`
   tar.write(header + data)
   tar.close()
   return callback(header)
@@ -90,15 +101,17 @@ function writeTarEntries (tarname, entries) {
     writeTarEntry(entries[i].part, entries[i].file, function (header) {
       writeChecksum(entries[i].part, header, function (data) {
         fs.appendFileSync(tarname, data.toString())
+        fs.unlinkSync(entries[i].part)
         if (i === entries.length - 1) {
-          fs.appendFileSync(tarname, padData(EOF_PADDING))
+          finalizeTar(tarname)
         }
       })
     })
   }
-  entries.map(function (entry) {
-    fs.unlinkSync(entry.part)
-  })
+}
+
+function finalizeTar (tarname) {
+  fs.appendFileSync(tarname, padData((EOF_PADDING * 2) + 1))
 }
 
 module.exports.createTar = function (tarname, filename, options) {
@@ -129,9 +142,10 @@ module.exports.createTar = function (tarname, filename, options) {
       writeTarEntries(tarname, entries)
     } else {
       if (filename.length < 100) {
+        fs.closeSync(fs.openSync(tarname, 'w'))
         writeTarEntry(tarname, filename, function (header) {
           writeChecksum(tarname, header, function () {
-            fs.appendFileSync(tarname, padData(EOF_PADDING))
+            finalizeTar(tarname)
           })
         })
       } else {
