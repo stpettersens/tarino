@@ -76,7 +76,7 @@ function writeTarEntry (tarname, filename, callback) {
   let tar = fs.createWriteStream(tarname, {start: 0, flags: 'w'})
   let header = `${filename}${padData(101 - filename.length)}` // (a)
   header += `0100777${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
-  header += `000000${NC} ${type}${padData(257 - 156)}ustar${NC}00${padData(512 - 264)}` // (g, h, i)
+  header += `000000${NC} ${type}${padData(101)}ustar${NC}00${padData(248)}` // (g, h, i)
   let data = `${writePaddedData(contents)}`
   tar.write(header + data)
   tar.close()
