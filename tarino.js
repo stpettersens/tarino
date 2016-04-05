@@ -9,7 +9,6 @@
 'use strict'
 
 const fs = require('fs')
-// const path = require('path')
 const zlib = require('zlib')
 
 const NC = String.fromCharCode(0)
@@ -114,6 +113,18 @@ function finalizeTar (tarname) {
   fs.appendFileSync(tarname, padData((EOF_PADDING * 2) + 1))
 }
 
+function truncateNew (tarname, entries) {
+  if (fs.existsSync(tarname)) {
+    fs.unlinkSync(tarname)
+  }
+  fs.closeSync(fs.openSync(tarname, 'w'))
+  if (entries !== null) {
+    for(let i = 0; i < entries.length; i++) {
+      fs.closeSync(fs.openSync(entries[i].part, 'w'))
+    }
+  }
+}
+
 module.exports.createTar = function (tarname, filename, options) {
   if (options && options.flat) {
     let fns = filename.split(/\//)
@@ -138,11 +149,11 @@ module.exports.createTar = function (tarname, filename, options) {
           throw Error
         }
       })
-      fs.closeSync(fs.openSync(tarname, 'w'))
+      truncateNew(tarname, entries)
       writeTarEntries(tarname, entries)
     } else {
       if (filename.length < 100) {
-        fs.closeSync(fs.openSync(tarname, 'w'))
+        truncateNew(tarname, null)
         writeTarEntry(tarname, filename, function (header) {
           writeChecksum(tarname, header, function () {
             finalizeTar(tarname)
