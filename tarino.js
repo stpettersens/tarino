@@ -10,6 +10,7 @@
 
 const fs = require('fs')
 const zlib = require('zlib')
+const native = require('./build/Release/tarino')
 
 const NC = String.fromCharCode(0)
 const EOF_PADDING = 512
