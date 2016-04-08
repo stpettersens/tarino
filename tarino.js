@@ -11,18 +11,17 @@
 const NC = String.fromCharCode(0)
 const EOF_PADDING = 512
 
-let USE_NATIVE = null;
+let USE_NATIVE = null
 
 const fs = require('fs')
-const os = require('os')
 const zlib = require('zlib')
 
-let native = null;
+let native = null
 try {
   native = require('./build/Release/tarino')
-  USE_NATIVE = true;
+  USE_NATIVE = true
 } catch (e) {
-  USE_NATIVE = false;
+  USE_NATIVE = false
 }
 
 function getStats (filename) {
@@ -59,7 +58,7 @@ function writePaddedData (data) {
     if (data.length <= eof) break
     m++
   }
-  return data + padData(eof - (data.length - 1)) 
+  return data + padData(eof - (data.length - 1))
 }
 
 function calcChecksum (header) {
@@ -120,14 +119,13 @@ function writeTarEntries (tarname, entries) {
     let manifest = tarname + '.entries'
     fs.writeFileSync(manifest, '')
     entries.map(function (entry) {
-      fs.appendFileSync(manifest, 
+      fs.appendFileSync(manifest,
       `${entry.part}:${entry.file}:${entry.size}:${entry.modified}:${entry.etype}\n`)
     })
-    if(native != null) {
+    if (native != null) {
       native.write_tar_entries(tarname, manifest)
     }
-  }
-  else {
+  } else {
     for (let i = 0; i < entries.length; i++) {
       writeTarEntry(entries[i].part, entries[i].file, function (header) {
         writeChecksum(entries[i].part, header, function (data) {
@@ -152,7 +150,7 @@ function truncateNew (tarname, entries) {
   }
   fs.closeSync(fs.openSync(tarname, 'w'))
   if (entries !== null) {
-    for(let i = 0; i < entries.length; i++) {
+    for (let i = 0; i < entries.length; i++) {
       fs.closeSync(fs.openSync(entries[i].part, 'w'))
     }
   }
@@ -179,7 +177,7 @@ module.exports.createTar = function (tarname, filename, options) {
         if (fn.length < 100) {
           let attribs = getStats(fn)
           return {
-            part: tarname.replace(/.tar$/, `.${++i}`), 
+            part: tarname.replace(/.tar$/, `.${++i}`),
             file: fn,
             size: attribs[0],
             modified: attribs[1],
@@ -189,13 +187,13 @@ module.exports.createTar = function (tarname, filename, options) {
           throw Error
         }
       })
-      if(!USE_NATIVE) {
+      if (!USE_NATIVE) {
         truncateNew(tarname, entries)
       }
       writeTarEntries(tarname, entries)
     } else {
       if (USE_NATIVE && filename.length < 100) {
-        native.write_tar_entry(tarname, filename);
+        native.write_tar_entry(tarname, filename)
       } else {
         if (filename.length < 100) {
           truncateNew(tarname, null)
