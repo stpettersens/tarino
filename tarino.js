@@ -8,12 +8,31 @@
 
 'use strict'
 
-const fs = require('fs')
-const zlib = require('zlib')
-const native = require('./build/Release/tarino')
-
 const NC = String.fromCharCode(0)
 const EOF_PADDING = 512
+
+let USE_NATIVE = null;
+
+const fs = require('fs')
+const os = require('os')
+const zlib = require('zlib')
+
+let native = null;
+try {
+  native = require('./build/Release/tarino')
+  USE_NATIVE = true;
+} catch (e) {
+  USE_NATIVE = false;
+}
+
+function getStats (filename) {
+  let stats = fs.statSync(filename)
+  let size = stats['size']
+  let modified = Date.parse(stats['mtime']) / 1000
+  let type = 0
+
+  return [size, modified, type]
+}
 
 function decToPaddedOctal (num, length) {
   let octal = parseInt(num, 10).toString(8)
@@ -97,16 +116,29 @@ function writeChecksum (tarname, header, callback) {
 }
 
 function writeTarEntries (tarname, entries) {
-  for (let i = 0; i < entries.length; i++) {
-    writeTarEntry(entries[i].part, entries[i].file, function (header) {
-      writeChecksum(entries[i].part, header, function (data) {
-        fs.appendFileSync(tarname, data.toString())
-        fs.unlinkSync(entries[i].part)
-        if (i === entries.length - 1) {
-          finalizeTar(tarname)
-        }
-      })
+  if (USE_NATIVE) {
+    let manifest = tarname + '.entries'
+    fs.writeFileSync(manifest, '')
+    entries.map(function (entry) {
+      fs.appendFileSync(manifest, 
+      `${entry.part}:${entry.file}:${entry.size}:${entry.modified}:${entry.etype}\n`)
     })
+    if(native != null) {
+      native.write_tar_entries(tarname, manifest)
+    }
+  }
+  else {
+    for (let i = 0; i < entries.length; i++) {
+      writeTarEntry(entries[i].part, entries[i].file, function (header) {
+        writeChecksum(entries[i].part, header, function (data) {
+          fs.appendFileSync(tarname, data.toString())
+          fs.unlinkSync(entries[i].part)
+          if (i === entries.length - 1) {
+            finalizeTar(tarname)
+          }
+        })
+      })
+    }
   }
 }
 
@@ -145,23 +177,36 @@ module.exports.createTar = function (tarname, filename, options) {
       let i = 0
       let entries = filename.map(function (fn) {
         if (fn.length < 100) {
-          return {part: tarname.replace(/.tar$/, `.${++i}`), file: fn}
+          let attribs = getStats(fn)
+          return {
+            part: tarname.replace(/.tar$/, `.${++i}`), 
+            file: fn,
+            size: attribs[0],
+            modified: attribs[1],
+            etype: attribs[2]
+          }
         } else {
           throw Error
         }
       })
-      truncateNew(tarname, entries)
+      if(!USE_NATIVE) {
+        truncateNew(tarname, entries)
+      }
       writeTarEntries(tarname, entries)
     } else {
-      if (filename.length < 100) {
-        truncateNew(tarname, null)
-        writeTarEntry(tarname, filename, function (header) {
-          writeChecksum(tarname, header, function () {
-            finalizeTar(tarname)
-          })
-        })
+      if (USE_NATIVE && filename.length < 100) {
+        native.write_tar_entry(tarname, filename);
       } else {
-        throw Error
+        if (filename.length < 100) {
+          truncateNew(tarname, null)
+          writeTarEntry(tarname, filename, function (header) {
+            writeChecksum(tarname, header, function () {
+              finalizeTar(tarname)
+            })
+          })
+        } else {
+          throw Error
+        }
       }
     }
   } catch (e) {
