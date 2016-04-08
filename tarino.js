@@ -122,9 +122,7 @@ function writeTarEntries (tarname, entries) {
       fs.appendFileSync(manifest,
       `${entry.part}:${entry.file}:${entry.size}:${entry.modified}:${entry.etype}\n`)
     })
-    if (native != null) {
-      native.write_tar_entries(tarname, manifest)
-    }
+    native.write_tar_entries(tarname, manifest)
   } else {
     for (let i = 0; i < entries.length; i++) {
       writeTarEntry(entries[i].part, entries[i].file, function (header) {
