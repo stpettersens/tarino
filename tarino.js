@@ -69,8 +69,16 @@ function calcChecksum (header) {
   return decToPaddedOctal(checksum - 64, 6)
 }
 
-function getContents (srcpath) {
-  return fs.readdirSync(srcpath)
+function getContents (srcpath, folder) {
+  let path = fs.readdirSync(srcpath)
+  if (folder) {
+    if (Array.isArray(srcpath)) {
+      path = srcpath.map (function (p) {
+        retun path + p;
+      })
+    }
+  }
+  return path
 }
 
 function writeTarEntry (tarname, filename, callback) {
@@ -165,7 +173,7 @@ module.exports.createTar = function (tarname, filename, options) {
   }
 
   if (options && options.folder) {
-    console.log(getContents(options.root))
+    filename = getContents(filename, true);
   }
 
   try {
