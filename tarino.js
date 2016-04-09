@@ -74,7 +74,7 @@ function getContents (srcpath, folder) {
   if (folder) {
     if (Array.isArray(srcpath)) {
       path = srcpath.map (function (p) {
-        retun path + p;
+        return path + p
       })
     }
   }

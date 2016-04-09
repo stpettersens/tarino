@@ -74,8 +74,8 @@ string dec_to_padded_octal(int num, int length) {
     ostringstream octal, padded;
     octal << std::oct << num;
     string padding = "";
-    if(length > octal.str().length()) {
-        for(int i = 0; i < (length - octal.str().length()); i++) {
+    if(length > (int)octal.str().length()) {
+        for(int i = 0; i < (length - (int)octal.str().length()); i++) {
             padding.append("0");
         } 
     }
@@ -83,7 +83,7 @@ string dec_to_padded_octal(int num, int length) {
     return padded.str();
 }
 
-string pad_data(size_t length) {
+string pad_data(int length) {
     string padding = "";
     for(int i = 1; i < length; i++) {
         ostringstream nc;
@@ -108,7 +108,7 @@ string write_padded_data(string data) {
 
 string calc_checksum(string header) {
     int checksum = 0;
-    for(int i = 0; i < header.length(); i++) {
+    for(int i = 0; i < (int)header.length(); i++) {
         checksum += (int)header.at(i);
     }
     return dec_to_padded_octal(checksum - 64, 6);
@@ -151,7 +151,7 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
 
 void p_write_tar_entries(string tarname, vector<TarEntry> entries) {
     vector<string> e;
-    for(int i = 0; i < entries.size(); i++) {
+    for(int i = 0; i < (int)entries.size(); i++) {
         string header = p_write_tar_entry(entries[i].get_part(), entries[i].get_file(),
         entries[i].get_size(), entries[i].get_modified(), entries[i].get_type());
         e.push_back(write_checksum(entries[i].get_part(), header));
@@ -177,7 +177,7 @@ string write_checksum(string tarname, string header) {
 
 string merge_entries(string tarname, vector<string> entries) {
     ostringstream contents, temp;
-    for(int i = 0; i < entries.size(); i++) {
+    for(int i = 0; i < (int)entries.size(); i++) {
         ifstream input(entries[i].c_str());
         contents << input.rdbuf();
         remove(entries[i].c_str());
@@ -227,7 +227,7 @@ int write_tar_entries(string tarname, string manifest) {
     p_write_tar_entries(tarname, entries);
     remove(manifest.c_str());
     remove(temp.str().c_str());
-    for(int i = 0; i < entries.size(); i++) {
+    for(int i = 0; i < (int)entries.size(); i++) {
         ostringstream part1, part2;
         part1 << "_" << entries[i].get_part() << "_";
         remove(part1.str().c_str());
