@@ -17,14 +17,13 @@ const fs = require('fs')
 const zlib = require('zlib')
 
 let native = null
-/*
+
 try {
   native = require('./build/Release/tarino')
   USE_NATIVE = true
 } catch (e) {
   USE_NATIVE = false
 }
-*/
 
 function getStats (filename) {
   let stats = fs.lstatSync(filename)
@@ -193,9 +192,14 @@ module.exports.zx = function () {
 
 module.exports.createTar = function (tarname, filename, options) {
 
-  if (options && options.native) {
+  if (options && options.native !== undefined) {
     USE_NATIVE = options.native
-    console.log('USE_NATIVE? ', USE_NATIVE)
+    console.log('Use native? ', USE_NATIVE)
+    if(native == null) {
+      USE_NATIVE = false;
+      console.warn(
+      'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
+    }
   }
 
   if (options && options.flat) {
