@@ -130,11 +130,10 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
     ostringstream contents;
     char nc = (char)0;
     string size = dec_to_padded_octal(_size, 10);
-    string modified = dec_to_padded_octal(_modified, 11);
+    string modified = dec_to_padded_octal(_modified, 0);
     string fm = "0100777";
     if(etype == 5) {
         fm = "0040777";
-        size = dec_to_padded_octal(_size - 1, 10);
     }
     else {
         ifstream input(filename.c_str());
@@ -168,8 +167,10 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
     }
     else {
         ostringstream aheader;
-        aheader << find_replace(header.str(), "010", "000");
-        tar << aheader.str();
+        //  THIS IS BROKEN. NEEDS FIXED!!!!
+        string i = find_replace(header.str(), "010", "000");
+        aheader << i; //find_replace(i, "0777", "000");
+        tar << header.str();
     }
     tar.close();
     return header.str();
