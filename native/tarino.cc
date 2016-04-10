@@ -60,6 +60,18 @@ string write_checksum(string, string);
 string merge_entries(string, vector<string>);
 void finalize_tar(string, string);
 
+string find_replace(string str, string query, string repl) {
+    size_t index = 0;
+    while(true) {
+        index = str.find(query, index);
+        if(index == string::npos) break;
+
+        str.replace(index, repl.length(), repl);
+        index += repl.length();
+    }
+    return str;
+}
+
 vector<string> split(string str, char delimiter) {
     vector<string> internal;
     stringstream ss(str);
@@ -95,10 +107,10 @@ string pad_data(int length) {
 
 string write_padded_data(string data) {
     ostringstream padded;
-    size_t eof = EOF_PADDING;
+    size_t eof = 0;
     int m = 1;
     while(eof < data.length()) {
-        eof = eof * m;
+        eof = EOF_PADDING * m;
         if(data.length() <= eof) break;
         m++;
     }
@@ -114,14 +126,21 @@ string calc_checksum(string header) {
     return dec_to_padded_octal(checksum - 64, 6);
 }
 
-string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) {
-    ifstream input(filename.c_str());
+string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) { 
     ostringstream contents;
-    contents << input.rdbuf();
-    input.close();
+    char nc = (char)0;
     string size = dec_to_padded_octal(_size, 10);
     string modified = dec_to_padded_octal(_modified, 11);
-    char nc = (char)0;
+    string fm = "0100777";
+    if(etype == 5) {
+        fm = "0040777";
+        size = dec_to_padded_octal(_size - 1, 10);
+    }
+    else {
+        ifstream input(filename.c_str());
+        contents << input.rdbuf();
+        input.close();
+    }
     /*
         * TAR FORMAT SPECIFICATION
         * (a) File name (0-)
@@ -141,10 +160,17 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
     ofstream tar;
     tar.open(temp.str().c_str(), ofstream::out | ofstream::binary);
     header << filename << pad_data(101 - filename.length())
-    << "0100777" << nc << "0000000" << nc << "0000000" << nc << size << nc << modified << nc
+    << fm << nc << "0000000" << nc << "0000000" << nc << size << nc << modified << nc
     << "0000000" << nc << " " << etype << pad_data(101) << "ustar" << nc << "00" << pad_data(248);
-    data << write_padded_data(contents.str());
-    tar << header.str() << data.str();
+    if(etype == 0) {
+        data << write_padded_data(contents.str());
+        tar << header.str() << data.str();
+    }
+    else {
+        ostringstream aheader;
+        aheader << find_replace(header.str(), "010", "000");
+        tar << aheader.str();
+    }
     tar.close();
     return header.str();
 }

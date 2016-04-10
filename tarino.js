@@ -11,24 +11,30 @@
 const NC = String.fromCharCode(0)
 const EOF_PADDING = 512
 
-let USE_NATIVE = null
+let USE_NATIVE = false
 
 const fs = require('fs')
 const zlib = require('zlib')
 
 let native = null
+/*
 try {
   native = require('./build/Release/tarino')
   USE_NATIVE = true
 } catch (e) {
   USE_NATIVE = false
 }
+*/
 
 function getStats (filename) {
-  let stats = fs.statSync(filename)
+  let stats = fs.lstatSync(filename)
   let size = stats['size']
   let modified = Date.parse(stats['mtime']) / 1000
   let type = 0
+
+  if (stats.isDirectory()) {
+    type = 5
+  }
 
   return [size, modified, type]
 }
@@ -51,10 +57,10 @@ function padData (length) {
 }
 
 function writePaddedData (data) {
-  let eof = EOF_PADDING
+  let eof = 0
   let m = 1
   while (eof < data.length) {
-    eof = eof * m
+    eof = EOF_PADDING * m
     if (data.length <= eof) break
     m++
   }
@@ -71,22 +77,32 @@ function calcChecksum (header) {
 
 function getContents (srcpath, folder) {
   let path = fs.readdirSync(srcpath)
-  if (folder) {
-    if (Array.isArray(srcpath)) {
-      path = srcpath.map (function (p) {
-        return path + p
-      })
+  let files = path
+  if (Array.isArray(path)) {
+    files = path.map(function (f) {
+      return `${srcpath}/${f}`
+    })
+    if (folder) {
+      files.unshift(srcpath + '/')
     }
   }
-  return path
+  return files
 }
 
 function writeTarEntry (tarname, filename, callback) {
-  let contents = fs.readFileSync(filename, 'ascii').toString()
-  let stats = fs.statSync(filename)
+  let contents = ''
+  let stats = fs.lstatSync(filename)
   let size = decToPaddedOctal(stats['size'], 11)
   let modified = decToPaddedOctal(Date.parse(stats['mtime']) / 1000, 0)
   let type = 0
+  let fm = '0100777'
+  if (stats.isDirectory()) {
+    type = 5
+    fm = '0040777'
+  }
+  else {
+    contents = fs.readFileSync(filename, 'ascii').toString()
+  }
   /**
     * TAR FORMAT SPECIFICATION
     * (a) File name (0-)
@@ -101,10 +117,16 @@ function writeTarEntry (tarname, filename, callback) {
   */
   let tar = fs.createWriteStream(tarname, {start: 0, flags: 'w'})
   let header = `${filename}${padData(101 - filename.length)}` // (a)
-  header += `0100777${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
+  header += `${fm}${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
   header += `000000${NC} ${type}${padData(101)}ustar${NC}00${padData(248)}` // (g, h, i)
-  let data = `${writePaddedData(contents)}`
-  tar.write(header + data)
+  if (type === 0) {
+    let data = `${writePaddedData(contents)}`
+    tar.write(header + data)
+  }
+  else {
+    header = header.replace(/010/, '000')
+    tar.write(header)
+  }
   tar.close()
   return callback(header)
 }
@@ -162,7 +184,20 @@ function truncateNew (tarname, entries) {
   }
 }
 
+module.exports.zx = function () {
+  let files = getContents('native', true)
+  files.map(function (f) {
+    console.log(getStats(f))
+  })
+}
+
 module.exports.createTar = function (tarname, filename, options) {
+
+  if (options && options.native) {
+    USE_NATIVE = options.native
+    console.log('USE_NATIVE? ', USE_NATIVE)
+  }
+
   if (options && options.flat) {
     let fns = filename.split(/\//)
     filename = fns[fns.length - 1]
@@ -196,6 +231,7 @@ module.exports.createTar = function (tarname, filename, options) {
       if (!USE_NATIVE) {
         truncateNew(tarname, entries)
       }
+      console.log(entries)
       writeTarEntries(tarname, entries)
     } else {
       if (USE_NATIVE && filename.length < 100) {
