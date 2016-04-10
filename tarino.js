@@ -98,8 +98,7 @@ function writeTarEntry (tarname, filename, callback) {
   if (stats.isDirectory()) {
     type = 5
     fm = '0040777'
-  }
-  else {
+  } else {
     contents = fs.readFileSync(filename, 'ascii').toString()
   }
   /**
@@ -121,8 +120,7 @@ function writeTarEntry (tarname, filename, callback) {
   if (type === 0) {
     let data = `${writePaddedData(contents)}`
     tar.write(header + data)
-  }
-  else {
+  } else {
     header = header.replace(/010/, '000')
     tar.write(header)
   }
@@ -183,20 +181,13 @@ function truncateNew (tarname, entries) {
   }
 }
 
-module.exports.zx = function () {
-  let files = getContents('native', true)
-  files.map(function (f) {
-    console.log(getStats(f))
-  })
-}
-
 module.exports.createTar = function (tarname, filename, options) {
-
   if (options && options.native !== undefined) {
     USE_NATIVE = options.native
     console.log('Use native? ', USE_NATIVE)
-    if(native == null) {
-      USE_NATIVE = false;
+
+    if (native == null) {
+      USE_NATIVE = false
       console.warn(
       'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
     }
@@ -212,7 +203,7 @@ module.exports.createTar = function (tarname, filename, options) {
   }
 
   if (options && options.folder) {
-    filename = getContents(filename, true);
+    filename = getContents(filename, true)
   }
 
   try {

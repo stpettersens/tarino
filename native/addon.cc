@@ -15,13 +15,13 @@
 void export_write_tar_entry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
     if (info.Length() < 5) {
-        Nan::ThrowTypeError("Wrong number of arguments");
+        Nan::ThrowTypeError("tarino-native: Wrong number of arguments");
         return;
     }
 
     if (!info[0]->IsString() || !info[1]->IsString() 
     || !info[2]->IsNumber() || !info[3]->IsNumber() || !info[4]->IsNumber()) {
-        Nan::ThrowTypeError("Arguments are string, string, number (int), number (int)");
+        Nan::ThrowTypeError("tarino-native: Arguments should be string, string, number (int), number (int)");
         return;
     }
 
@@ -39,12 +39,12 @@ void export_write_tar_entry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 void export_write_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
     if (info.Length() < 2) {
-        Nan::ThrowTypeError("Wrong number of arguments");
+        Nan::ThrowTypeError("tarino_native: Wrong number of arguments");
         return;
     }
 
     if (!info[0]->IsString() || !info[1]->IsString()) {
-        Nan::ThrowTypeError("Arguments are string, string");
+        Nan::ThrowTypeError("tarino-native: Arguments should be string, string");
         return;
     }
 
