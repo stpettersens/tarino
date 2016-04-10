@@ -186,7 +186,7 @@ module.exports.createTar = function (tarname, filename, options) {
     USE_NATIVE = options.native
     console.log('Use native? ', USE_NATIVE)
 
-    if (native == null) {
+    if (native == null && USE_NATIVE) {
       USE_NATIVE = false
       console.warn(
       'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
