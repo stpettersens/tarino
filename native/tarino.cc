@@ -60,18 +60,6 @@ string write_checksum(string, string);
 string merge_entries(string, vector<string>);
 void finalize_tar(string, string);
 
-string find_replace(string str, string query, string repl) {
-    size_t index = 0;
-    while(true) {
-        index = str.find(query, index);
-        if(index == string::npos) break;
-
-        str.replace(index, repl.length(), repl);
-        index += repl.length();
-    }
-    return str;
-}
-
 vector<string> split(string str, char delimiter) {
     vector<string> internal;
     stringstream ss(str);
@@ -97,7 +85,7 @@ string dec_to_padded_octal(int num, int length) {
 
 string pad_data(size_t length) {
     string padding = "";
-    for(int i = 1; i < length; i++) {
+    for(int i = 1; i < (int)length; i++) {
         ostringstream nc;
         nc << (char)0;
         padding.append(nc.str());
@@ -109,9 +97,9 @@ string write_padded_data(string data) {
     ostringstream padded;
     int eof = 0;
     int m = 1;
-    while(eof < data.length()) {
+    while(eof < (int)data.length()) {
         eof = EOF_PADDING * m;
-        if(data.length() <= eof) break;
+        if((int)data.length() <= eof) break;
         m++;
     }
     padded << data << pad_data(eof - (data.length() - 1));
