@@ -182,9 +182,9 @@ function truncateNew (tarname, entries) {
 }
 
 module.exports.createTar = function (tarname, filename, options) {
+
   if (options && options.native !== undefined) {
     USE_NATIVE = options.native
-    console.log('Use native? ', USE_NATIVE)
 
     if (native == null && USE_NATIVE) {
       USE_NATIVE = false

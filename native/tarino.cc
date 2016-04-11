@@ -16,7 +16,7 @@
 #include <cstring>
 using namespace std;
 
-static size_t EOF_PADDING = 512;
+static int EOF_PADDING = 512;
 
 class TarEntry {
 private:
@@ -95,7 +95,7 @@ string dec_to_padded_octal(int num, int length) {
     return padded.str();
 }
 
-string pad_data(int length) {
+string pad_data(size_t length) {
     string padding = "";
     for(int i = 1; i < length; i++) {
         ostringstream nc;
@@ -107,7 +107,7 @@ string pad_data(int length) {
 
 string write_padded_data(string data) {
     ostringstream padded;
-    size_t eof = 0;
+    int eof = 0;
     int m = 1;
     while(eof < data.length()) {
         eof = EOF_PADDING * m;
@@ -123,13 +123,13 @@ string calc_checksum(string header) {
     for(int i = 0; i < (int)header.length(); i++) {
         checksum += (int)header.at(i);
     }
-    return dec_to_padded_octal(checksum - 64, 6);
+    return dec_to_padded_octal(checksum - 64, 6); // - 64, 6
 }
 
 string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) { 
     ostringstream contents;
     char nc = (char)0;
-    string size = dec_to_padded_octal(_size, 10);
+    string size = dec_to_padded_octal(_size, 11);
     string modified = dec_to_padded_octal(_modified, 0);
     string fm = "0100777";
     if(etype == 5) {
@@ -158,18 +158,14 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
     temp << "_" << tarname << "_";
     ofstream tar;
     tar.open(temp.str().c_str(), ofstream::out | ofstream::binary);
-    header << filename << pad_data(101 - filename.length())
-    << fm << nc << "0000000" << nc << "0000000" << nc << size << nc << modified << nc
-    << "0000000" << nc << " " << etype << pad_data(101) << "ustar" << nc << "00" << pad_data(248);
+    header << filename << pad_data(101 - filename.length()) // (a)
+    << fm << nc << "0000000" << nc << "0000000" << nc << size << nc << modified << nc // (b, c, d, e, f)
+    << "000000" << nc << " " << etype << pad_data(101) << "ustar" << nc << "00" << pad_data(248); // (g, h, i)
     if(etype == 0) {
         data << write_padded_data(contents.str());
         tar << header.str() << data.str();
     }
     else {
-        ostringstream aheader;
-        //  THIS IS BROKEN. NEEDS FIXED!!!!
-        string i = find_replace(header.str(), "010", "000");
-        aheader << i; //find_replace(i, "0777", "000");
         tar << header.str();
     }
     tar.close();
