@@ -166,7 +166,7 @@ function writeTarEntries (tarname, entries) {
 }
 
 function finalizeTar (tarname) {
-  fs.appendFileSync(tarname, padData((EOF_PADDING * 2) + 1))
+  fs.appendFileSync(tarname, padData((EOF_PADDING * 3) + 1))
 }
 
 function truncateNew (tarname, entries) {

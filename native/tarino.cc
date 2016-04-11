@@ -206,7 +206,7 @@ void finalize_tar(string temp, string tarname) {
     input.close();
     ofstream tar;
     tar.open(tarname.c_str(), ofstream::out | ofstream::binary);
-    tar << contents.str() << pad_data((EOF_PADDING * 2) + 1);
+    tar << contents.str() << pad_data((EOF_PADDING * 3) + 1);
     tar.close();
 }
 
