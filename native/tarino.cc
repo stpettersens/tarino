@@ -161,12 +161,10 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
     header << filename << pad_data(101 - filename.length()) // (a)
     << fm << nc << "0000000" << nc << "0000000" << nc << size << nc << modified << nc // (b, c, d, e, f)
     << "000000" << nc << " " << etype << pad_data(101) << "ustar" << nc << "00" << pad_data(248); // (g, h, i)
+    tar << header.str();
     if(etype == 0) {
         data << write_padded_data(contents.str());
-        tar << header.str() << data.str();
-    }
-    else {
-        tar << header.str();
+        tar << data.str();
     }
     tar.close();
     return header.str();
