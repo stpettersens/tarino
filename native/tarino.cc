@@ -56,7 +56,7 @@ public:
     }
 };
 
-string write_checksum(string, string);
+string write_checksum(string, int, string);
 string merge_entries(string, vector<string>);
 void finalize_tar(string, string);
 
@@ -114,6 +114,24 @@ string calc_checksum(string header) {
     return dec_to_padded_octal(checksum - 64, 6); // - 64, 6
 }
 
+void patch_tar(string temp, int etype, string checksum) {
+    if(etype == 5) {
+        ostringstream fs;
+        ostringstream patched;
+        ifstream input(temp.c_str());
+        patched << input.rdbuf();
+        input.close();
+        ofstream tar;
+        tar.open(temp.c_str());
+        tar << patched.str();
+        tar.seekp(130);
+        tar << "0";
+        tar.seekp(148);
+        tar << checksum;
+        tar.close();
+    }
+}
+
 string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) { 
     ostringstream contents;
     char nc = (char)0;
@@ -163,12 +181,13 @@ void p_write_tar_entries(string tarname, vector<TarEntry> entries) {
     for(int i = 0; i < (int)entries.size(); i++) {
         string header = p_write_tar_entry(entries[i].get_part(), entries[i].get_file(),
         entries[i].get_size(), entries[i].get_modified(), entries[i].get_type());
-        e.push_back(write_checksum(entries[i].get_part(), header));
+        e.push_back(write_checksum(entries[i].get_part(), entries[i].get_type(), header));
     }
     finalize_tar(merge_entries(tarname, e), tarname);
 }
 
-string write_checksum(string tarname, string header) {
+string write_checksum(string tarname, int etype, string header) {
+    string checksum = calc_checksum(header);
     ostringstream t1, t2, contents;
     t1 << "_" << tarname << "_";
     t2 << "__" << tarname << "__";
@@ -179,8 +198,10 @@ string write_checksum(string tarname, string header) {
     tar.open(t2.str().c_str(), ofstream::out | ofstream::binary);
     tar << contents.str();
     tar.seekp(148);
-    tar << calc_checksum(header);
+    tar << checksum;
     tar.close();
+    string corrected_checksum = dec_to_padded_octal(stoi(checksum, 0, 8) - 1, 6);
+    patch_tar(t2.str(), etype, corrected_checksum);
     return t2.str();
 }
 
@@ -215,7 +236,7 @@ int write_tar_entry(string tarname, string filename, int size, int modified, int
     temp1 << "_" << tarname << "_";
     temp2 << "__" << tarname << "__";
     string header = p_write_tar_entry(tarname, filename, size, modified, etype);
-    finalize_tar(write_checksum(tarname, header), tarname);
+    finalize_tar(write_checksum(tarname, etype, header), tarname);
     remove(temp1.str().c_str());
     remove(temp2.str().c_str());
     return 0;
