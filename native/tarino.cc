@@ -126,8 +126,10 @@ void patch_tar(string temp, int etype, string checksum) {
         tar << patched.str();
         tar.seekp(130);
         tar << "0";
+        #ifdef __GNUC__
         tar.seekp(148);
-        tar << checksum;
+        tar << dec_to_padded_octal(stoi(checksum, 0, 8) - 1, 6);
+        #endif
         tar.close();
     }
 }
@@ -200,8 +202,7 @@ string write_checksum(string tarname, int etype, string header) {
     tar.seekp(148);
     tar << checksum;
     tar.close();
-    string corrected_checksum = dec_to_padded_octal(stoi(checksum, 0, 8) - 1, 6);
-    patch_tar(t2.str(), etype, corrected_checksum);
+    patch_tar(t2.str(), etype, checksum);
     return t2.str();
 }
 
