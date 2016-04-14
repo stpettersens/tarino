@@ -126,7 +126,7 @@ void patch_tar(string temp, int etype, string checksum) {
         tar << patched.str();
         tar.seekp(130);
         tar << "0";
-        #ifdef __GNUC__
+        #ifdef __unix__
         tar.seekp(148);
         tar << dec_to_padded_octal(stoi(checksum, 0, 8) - 1, 6);
         #endif
