@@ -190,7 +190,7 @@ module.exports.createTar = function (tarname, filename, options) {
       USE_NATIVE = false
       console.warn(
       'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
-      if (os.getPlatform() === 'win32') {
+      if (os.platform() === 'win32') {
         console.warn('There is known problems with the non-native impl. on Windows!')
       }
     }
@@ -203,7 +203,7 @@ module.exports.createTar = function (tarname, filename, options) {
   if (options && options.flat) {
     let fns = filename.split(/\//)
     let flat_fn = fns[fns.length - 1]
-    fs.createReadStream(filename).pipe(fs.createWriteStream(flat_fn))
+    fs.writeFileSync(flat_fn, fs.readFileSync(filename))
     filename = flat_fn
   }
 
