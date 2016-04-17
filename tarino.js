@@ -16,8 +16,10 @@ let USE_NATIVE = false
 const fs = require('fs')
 const zlib = require('zlib')
 const os = require('os')
+const wrench = require('wrench')
 
 let native = null
+let rdir = null
 
 try {
   native = require('./build/Release/tarino')
@@ -78,14 +80,23 @@ function calcChecksum (header) {
 function getContents (srcpath, folder) {
   let path = fs.readdirSync(srcpath)
   let files = path
+  let filesr = []
   if (Array.isArray(path)) {
     files = path.map(function (f) {
+      if (getStats(`${srcpath}/${f}`)[2] === 5) {
+        filesr.push(getContents(`${srcpath}/${f}`))
+      }
       return `${srcpath}/${f}`
     })
     if (folder) {
       files.unshift(srcpath + '/')
     }
   }
+  filesr.map(function (filesrr) {
+    filesrr.map(function (f) {
+      files.push(f)
+    })
+  })
   return files
 }
 
@@ -208,6 +219,11 @@ module.exports.createTar = function (tarname, filename, options) {
   }
 
   if (options && options.folder) {
+    if (options.root !== undefined) {
+      rdir = filename.split(options.root + '/')[1]
+      wrench.copyDirSyncRecursive(filename, rdir)
+      filename = rdir
+    }
     filename = getContents(filename, true)
   }
 
@@ -231,7 +247,9 @@ module.exports.createTar = function (tarname, filename, options) {
       if (!USE_NATIVE) {
         truncateNew(tarname, entries)
       }
-      console.log(entries)
+      if (options && options.verbose) {
+        console.log(entries)
+      }
       writeTarEntries(tarname, entries)
     } else {
       if (USE_NATIVE && filename.length < 100) {
@@ -256,11 +274,18 @@ module.exports.createTar = function (tarname, filename, options) {
   } finally {
     if (options && options.flat && fs.existsSync(filename)) {
       fs.unlinkSync(filename)
+    } else if (options && options.folder && options.root && rdir !== null) {
+      wrench.rmdirSyncRecursive(rdir)
     }
   }
 }
 
 module.exports.createTarGz = function (tarnamegz, filename, options) {
+  if (/\.tar$/.test(tarnamegz)) {
+    console.warn('tarino: You are trying to create a gzipped tar with a *.tar extension.')
+    console.warn('This will not work. Please use *.tar.gz.')
+    process.exit(-1)
+  }
   let tarname = tarnamegz.split(/\.gz$/)[0]
   this.createTar(tarname, filename, options)
   let gzip = fs.createWriteStream(tarnamegz)
