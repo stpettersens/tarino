@@ -182,7 +182,6 @@ function truncateNew (tarname, entries) {
 }
 
 module.exports.createTar = function (tarname, filename, options) {
-
   if (options && options.native !== undefined) {
     USE_NATIVE = options.native
 
@@ -230,7 +229,8 @@ module.exports.createTar = function (tarname, filename, options) {
       writeTarEntries(tarname, entries)
     } else {
       if (USE_NATIVE && filename.length < 100) {
-        native.write_tar_entry(tarname, filename)
+        let attribs = getStats(filename)
+        native.write_tar_entry(tarname, filename, attribs[0], attribs[1], attribs[2])
       } else {
         if (filename.length < 100) {
           truncateNew(tarname, null)
@@ -261,5 +261,9 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
   } catch (e) {
     console.warn(`tarino: Error creating ${tarnamegz}`)
     console.log(e)
+  } finally {
+    if (fs.existsSync(tarname)) {
+      fs.unlinkSync(tarname)
+    }
   }
 }
