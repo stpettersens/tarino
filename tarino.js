@@ -15,6 +15,7 @@ let USE_NATIVE = false
 
 const fs = require('fs')
 const zlib = require('zlib')
+const os = require('os')
 
 let native = null
 
@@ -189,16 +190,21 @@ module.exports.createTar = function (tarname, filename, options) {
       USE_NATIVE = false
       console.warn(
       'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
+      if (os.getPlatform() === 'win32') {
+        console.warn('There is known problems with the non-native impl. on Windows!')
+      }
     }
+  }
+
+  if (options && options.root) {
+    filename = `${options.root}/${filename}`
   }
 
   if (options && options.flat) {
     let fns = filename.split(/\//)
-    filename = fns[fns.length - 1]
-  }
-
-  if (options && options.root) {
-    console.log(options.root)
+    let flat_fn = fns[fns.length - 1]
+    fs.createReadStream(filename).pipe(fs.createWriteStream(flat_fn))
+    filename = flat_fn
   }
 
   if (options && options.folder) {
@@ -245,7 +251,12 @@ module.exports.createTar = function (tarname, filename, options) {
       }
     }
   } catch (e) {
+    console.warn(`tarino: Error creating ${tarname}`)
     console.log(e.stack)
+  } finally {
+    if (options && options.flat && fs.existsSync(filename)) {
+      fs.unlinkSync(filename)
+    }
   }
 }
 
