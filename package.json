@@ -20,6 +20,7 @@
   "license": "MIT",
   "gypfile": true,
   "dependencies": {
-    "nan": "^2.2.1"
+    "nan": "^2.2.1",
+    "wrench": "^1.5.9"
   }
 }
