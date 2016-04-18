@@ -18,6 +18,10 @@
   ],
   "author": "Sam Saint-Pettersen <s.stpettersen+github@gmail.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stpettersens/tarino/issues"
+  },
+  "homepage": "https://github.com/stpettersens/tarino#readme",
   "gypfile": true,
   "dependencies": {
     "nan": "^2.2.1",

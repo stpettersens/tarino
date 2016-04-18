@@ -36,23 +36,23 @@ public:
     };
 
     string get_part() {
-        return this->part;
+        return part;
     }
 
     string get_file() {
-        return this->file;
+        return file;
     }
 
     int get_size() {
-        return this->size;
+        return size;
     }
 
     int get_modified() {
-        return this->modified;
+        return modified;
     }
 
     int get_type() {
-        return this->etype;
+        return etype;
     }
 };
 
