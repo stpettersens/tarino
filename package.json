@@ -24,6 +24,7 @@
   "homepage": "https://github.com/stpettersens/tarino#readme",
   "gypfile": true,
   "dependencies": {
+    "binstring": "^0.2.1",
     "nan": "^2.2.1",
     "wrench": "^1.5.9"
   }

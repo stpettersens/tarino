@@ -2,7 +2,7 @@
 
 const tarino = require('./tarino')
 
-tarino.createTarGz('tarino.tar.gz', 'tarino.cc', 
+tarino.createTar('tarino.tar', 'tarino.cc', 
 {root: 'native', flat: true, native: true})
 // tarino.createTar('tarino.tar', [ 'README.md', 'package.json' ])
 // tarino.createTar('tarino.tar', 'native', {folder: true})

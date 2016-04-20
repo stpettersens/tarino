@@ -144,7 +144,8 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
         fm = "0040777";
     }
     else {
-        ifstream input(filename.c_str());
+        ifstream input;
+        input.open(filename.c_str());
         contents << input.rdbuf();
         input.close();
     }
@@ -228,7 +229,7 @@ void finalize_tar(string temp, string tarname) {
     input.close();
     ofstream tar;
     tar.open(tarname.c_str(), ofstream::out | ofstream::binary);
-    tar << contents.str() << pad_data((EOF_PADDING * 3) + 1);
+    tar << contents.str() << pad_data((EOF_PADDING * 4) + 1);
     tar.close();
 }
 

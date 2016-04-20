@@ -14,6 +14,7 @@ const EOF_PADDING = 512
 let USE_NATIVE = false
 
 const fs = require('fs')
+const conv = require('binstring')
 const zlib = require('zlib')
 const os = require('os')
 const wrench = require('wrench')
@@ -69,6 +70,10 @@ function writePaddedData (data) {
   return data + padData(eof - (data.length - 1))
 }
 
+function toBuffer (data) {
+  return conv(data, {out: 'buffer'})
+}
+
 function calcChecksum (header) {
   let checksum = 0
   for (let i = 0; i < header.length; i++) {
@@ -102,6 +107,7 @@ function getContents (srcpath, folder) {
 
 function writeTarEntry (tarname, filename, callback) {
   let contents = ''
+  let bits = null
   let stats = fs.lstatSync(filename)
   let size = decToPaddedOctal(stats['size'], 11)
   let modified = decToPaddedOctal(Date.parse(stats['mtime']) / 1000, 0)
@@ -125,16 +131,18 @@ function writeTarEntry (tarname, filename, callback) {
     * (h) Link indicator (file type) (156; 1)
     * (i) UStar indicator (257; 6)
   */
-  let tar = fs.createWriteStream(tarname, {start: 0, flags: 'w'})
+  let tar = fs.createWriteStream(tarname, {start: 0, flags: 'w', encoding: 'binary'})
   let header = `${filename}${padData(101 - filename.length)}` // (a)
   header += `${fm}${NC}0000000${NC}0000000${NC}${size}${NC}${modified}${NC}` // (b, c, d, e, f)
   header += `000000${NC} ${type}${padData(101)}ustar${NC}00${padData(248)}` // (g, h, i)
+  let data = []
+  data.push(toBuffer(header))
   if (type === 0) {
-    let data = `${writePaddedData(contents)}`
-    tar.write(header + data)
+    data.push(toBuffer(writePaddedData(contents)))
+    tar.write(Buffer.concat(data))
   } else {
-    header = header.replace(/010/, '000')
-    tar.write(header)
+    data[0] = toBuffer(header.replace(/010/, '000'))
+    tar.write(Buffer.concat(data))
   }
   tar.close()
   return callback(header)
