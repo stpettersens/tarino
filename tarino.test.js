@@ -61,7 +61,7 @@ describe('Test tarino:', function () {
   })
 
   it('Should create gzipped archive (tar.gz) using pure JS implementation.', function (done) {
-    if (os.platform() === 'win32') {
+    if (os.platform() !== 'win32') {
       tarino.createTarGz(archives_gz[1], sources, {native: false, verbose: true})
       if (!fs.existsSync(archives_gz[1])) {
         throw Error
