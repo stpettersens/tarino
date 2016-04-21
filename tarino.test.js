@@ -82,7 +82,6 @@ describe('Test tarino:', function () {
           }
           stats.push(stat.size)
           if (stats.length === 2) {
-            console.log(stats)
             assert.equal(stats[0], stats[1])
           }
         })
@@ -94,8 +93,8 @@ describe('Test tarino:', function () {
           }
           stats.push(stat.size)
           if (stats.length === 2) {
-            console.log(stats)
             assert.equal(stats[2], stats[3])
+            console.log(stats)
           }
         })
       })
