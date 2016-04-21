@@ -80,10 +80,10 @@ describe('Test tarino:', function () {
           if (err) {
             throw Error
           }
-          stats.push(stat)
+          stats.push(stat.size)
           if (stats.length === 2) {
             console.log(stats)
-            assert.equal(stats[0]['size'], stats[1]['size'])
+            assert.equal(stats[0], stats[1])
           }
         })
       })
@@ -92,10 +92,10 @@ describe('Test tarino:', function () {
           if (err) {
             throw Error
           }
-          stats.push(stat)
+          stats.push(stat.size)
           if (stats.length === 2) {
             console.log(stats)
-            assert.equal(stats[2]['size'], stats[3]['size'])
+            assert.equal(stats[2], stats[3])
           }
         })
       })
