@@ -42,13 +42,13 @@ describe('Test tarino:', function () {
     done()
   })
 
-  it('Should create gzipped archive (tar.gz) using native implementation', function (done) {
+  /* it('Should create gzipped archive (tar.gz) using native implementation', function (done) {
     tarino.createTarGz(archives_gz[0], sources, {native: true, verbose: true})
     if (!fs.existsSync(archives_gz[0])) {
       throw Error
     }
     done()
-  })
+  }) */
 
   it('Should create archive (tar) using pure JS implementation.', function (done) {
     if (os.platform() !== 'win32') {
@@ -69,12 +69,10 @@ describe('Test tarino:', function () {
         stats.push(fs.lstatSync(archive))
       })
       assert.equal(stats[0]['size'], stats[1]['size'])
-
-      archives_gz.map(function (archive_gz) {
+      /* archives_gz.map(function (archive_gz) {
         stats.push(fs.lstatSync(archive_gz))
       })
-      assert.equal(stats[2]['size'], stats[3]['size'])
-      
+      assert.equal(stats[2]['size'], stats[3]['size']) */
     } else {
       console.info('\tSkipping this test on Windows:')
     }
