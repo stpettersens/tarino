@@ -64,7 +64,12 @@ describe('Test tarino:', function () {
     let stats = []
     if (os.platform() !== 'win32') {
       archives.map(function (archive) {
-        stats.push(fs.lstatSync(archive))
+        fs.lstat(archive, function (err, data) {
+          if (err) {
+            throw Error
+          }
+          stats.push(data)
+        })
       })
       assert.equal(stats[0]['size'], stats[1]['size'])
       /* archives_gz.map(function (archive_gz) {
