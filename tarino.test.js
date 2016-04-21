@@ -14,9 +14,9 @@ const _exec = require('child_process').exec
 let archives = ['tarino_na.tar', 'tarino_js.tar']
 let sources = ['tarino.js', 'tarino.test.js']
 
-/* let archives_gz = archives.map(function (archive) {
+let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
-}) */
+})
 
 describe('Test tarino:', function () {
   it('Test code conforms to JS Standard Style (http://standardjs.com).', function (done) {
@@ -40,14 +40,6 @@ describe('Test tarino:', function () {
     done()
   })
 
-  /* it('Should create gzipped archive (tar.gz) using native implementation', function (done) {
-    tarino.createTarGz(archives_gz[0], sources, {native: true, verbose: true})
-    if (!fs.existsSync(archives_gz[0])) {
-      throw Error
-    }
-    done()
-  }) */
-
   it('Should create archive (tar) using pure JS implementation.', function (done) {
     if (os.platform() !== 'win32') {
       tarino.createTar(archives[1], sources, {native: false, verbose: true})
@@ -60,22 +52,43 @@ describe('Test tarino:', function () {
     done()
   })
 
+  it('Should create gzipped archive (tar.gz) using native implementation.', function (done) {
+    tarino.createTarGz(archives_gz[0], sources, {native: true, verbose: true})
+    if (!fs.existsSync(archives_gz[0])) {
+      throw Error
+    }
+    done()
+  })
+
+  it('Should create gzipped archive (tar.gz) using pure JS implementation.', function (done) {
+    tarino.createTarGz(archives_gz[1], sources, {native: true, verbose: true})
+    if (!fs.existsSync(archives_gz[1])) {
+      throw Error
+    }
+    done()
+  })
+
   it('Archives created by native and pure JS implementations should be equal', function (done) {
     let stats = []
     if (os.platform() !== 'win32') {
       archives.map(function (archive) {
-        fs.lstat(archive, function (err, data) {
+        fs.lstat(archive, function (err, stat) {
           if (err) {
             throw Error
           }
-          stats.push(data)
+          stats.push(stat)
+          assert.equal(stats[0]['size'], stats[1]['size'])
         })
       })
-      assert.equal(stats[0]['size'], stats[1]['size'])
-      /* archives_gz.map(function (archive_gz) {
-        stats.push(fs.lstatSync(archive_gz))
+      archives_gz.map(function (archive_gz) {
+        fs.lstat(archive_gz, function (err, stat) {
+          if (err) {
+            throw Error
+          }
+          stats.push(stat)
+          assert.equal(stats[2]['size'], stats[3]['size'])
+        })
       })
-      assert.equal(stats[2]['size'], stats[3]['size']) */
     } else {
       console.info('\tSkipping this test on Windows:')
     }
