@@ -84,7 +84,7 @@ describe('Test tarino:', function () {
           if (stats.length === 2) {
             console.log(stats)
             assert.equal(stats[0]['size'], stats[1]['size'])
-          } 
+          }
         })
       })
       archives_gz.map(function (archive_gz) {
