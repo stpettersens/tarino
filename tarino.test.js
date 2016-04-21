@@ -69,17 +69,12 @@ describe('Test tarino:', function () {
         stats.push(fs.lstatSync(archive))
       })
       assert.equal(stats[0]['size'], stats[1]['size'])
-      archives.map(function (archive) {
-        fs.unlinkSync(archive)
-      })
 
       archives_gz.map(function (archive_gz) {
         stats.push(fs.lstatSync(archive_gz))
       })
       assert.equal(stats[2]['size'], stats[3]['size'])
-      archives_gz.map(function (archive_gz) {
-        fs.unlinkSync(archive_gz)
-      })
+      
     } else {
       console.info('\tSkipping this test on Windows:')
     }
