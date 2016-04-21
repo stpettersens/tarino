@@ -14,23 +14,21 @@ const _exec = require('child_process').exec
 let archives = ['tarino_na.tar', 'tarino_js.tar']
 let sources = ['tarino.js', 'tarino.test.js']
 
-let archives_gz = archives.map(function (archive) {
+/* let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
-})
+}) */
 
 describe('Test tarino:', function () {
   it('Test code conforms to JS Standard Style (http://standardjs.com).', function (done) {
-    sources.map(function (source) {
-      _exec(`standard ${source}`, function (err, stdout, stderr) {
-        let passed = true
-        if (err || stderr.length > 0) {
-          console.log('\n' + stderr)
-          console.log(stdout)
-          passed = false
-        }
-        assert.equal(passed, true)
-        done()
-      })
+    _exec(`standard ${sources.join(' ')}`, function (err, stdout, stderr) {
+      let passed = true
+      if (err || stderr.length > 0) {
+        console.log('\n' + stderr)
+        console.log(stdout)
+        passed = false
+      }
+      assert.equal(passed, true)
+      done()
     })
   })
 
