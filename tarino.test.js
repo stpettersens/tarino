@@ -94,7 +94,6 @@ describe('Test tarino:', function () {
           stats.push(stat.size)
           if (stats.length === 2) {
             assert.equal(stats[2], stats[3])
-            console.log(stats)
           }
         })
       })
