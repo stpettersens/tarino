@@ -107,7 +107,6 @@ function getContents (srcpath, folder) {
 
 function writeTarEntry (tarname, filename, callback) {
   let contents = ''
-  let bits = null
   let stats = fs.lstatSync(filename)
   let size = decToPaddedOctal(stats['size'], 11)
   let modified = decToPaddedOctal(Date.parse(stats['mtime']) / 1000, 0)
@@ -256,6 +255,7 @@ module.exports.createTar = function (tarname, filename, options) {
         truncateNew(tarname, entries)
       }
       if (options && options.verbose) {
+        console.info('Using native: ', USE_NATIVE)
         console.log(entries)
       }
       writeTarEntries(tarname, entries)
