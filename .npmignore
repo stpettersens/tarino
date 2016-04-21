@@ -1,0 +1,7 @@
+node_modules/
+build/
+*.tar
+*.tar.gz
+.gitignore
+.travis.yml
+test.js
