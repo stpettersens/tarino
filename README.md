@@ -29,7 +29,7 @@ Then run tests with:
 
 const tarino = require('tarino')
 tarino.createTar('control.tar', 'control') // --> Create regular Tar.
-tarino.createTarGz('control.tar', 'control') // --> Create gzipped Tar.
+tarino.createTarGz('control.tar.gz', 'control') // --> Create gzipped Tar.
 ```
 
 ##### Other requirements
