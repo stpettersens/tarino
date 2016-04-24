@@ -1,6 +1,6 @@
 {
   "name": "tarino",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A tar implementation with Node.js.",
   "main": "tarino.js",
   "scripts": {
