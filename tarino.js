@@ -13,11 +13,11 @@ const EOF_PADDING = 512
 
 let USE_NATIVE = false
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const conv = require('binstring')
 const zlib = require('zlib')
 const os = require('os')
-const wrench = require('wrench')
+const dos2unix = require('ssp-dos2unix').dos2unix
 
 let native = null
 let rdir = null
@@ -116,7 +116,8 @@ function writeTarEntry (tarname, filename, callback) {
     type = 5
     fm = '0040777'
   } else {
-    contents = fs.readFileSync(filename, 'ascii').toString()
+    // contents = fs.readFileSync(filename, 'ascii').toString()
+    contents = dos2unix(filename, {write: true}) 
   }
   /**
     * TAR FORMAT SPECIFICATION
@@ -200,11 +201,17 @@ function truncateNew (tarname, entries) {
   }
 }
 
-module.exports.createTar = function (tarname, filename, options) {
+function setCommonOptions (options) {
+  if (options == undefined) {
+    options = {
+      native: USE_NATIVE
+    }
+  }
+
   if (options && options.native !== undefined) {
     USE_NATIVE = options.native
 
-    if (native == null && USE_NATIVE) {
+    if (native === null && USE_NATIVE) {
       USE_NATIVE = false
       console.warn(
       'tarino: Falling back to pure JS implementation ( native: ', USE_NATIVE, ')')
@@ -213,22 +220,26 @@ module.exports.createTar = function (tarname, filename, options) {
       }
     }
   }
+  return options
+}
 
-  if (options && options.root) {
+module.exports.createTar = function (tarname, filename, options) {
+  options = setCommonOptions(options)
+  if (options.root === undefined) {
     filename = `${options.root}/${filename}`
   }
 
-  if (options && options.flat) {
+  if (options.flat === undefined) {
     let fns = filename.split(/\//)
     let flat_fn = fns[fns.length - 1]
     fs.writeFileSync(flat_fn, fs.readFileSync(filename))
     filename = flat_fn
   }
 
-  if (options && options.folder) {
+  if (options.folder === undefined) {
     if (options.root !== undefined) {
       rdir = filename.split(options.root + '/')[1]
-      wrench.copyDirSyncRecursive(filename, rdir)
+      fs.copySync(filename, rdir)
       filename = rdir
     }
     filename = getContents(filename, true)
@@ -283,12 +294,13 @@ module.exports.createTar = function (tarname, filename, options) {
     if (options && options.flat && fs.existsSync(filename)) {
       fs.unlinkSync(filename)
     } else if (options && options.folder && options.root && rdir !== null) {
-      wrench.rmdirSyncRecursive(rdir)
+      fs.removeSync(rdir)
     }
   }
 }
 
 module.exports.createTarGz = function (tarnamegz, filename, options) {
+  options = setCommonOptions(options)
   if (/\.tar$/.test(tarnamegz)) {
     console.warn('tarino: You are trying to create a gzipped tar with a *.tar extension.')
     console.warn('This will not work. Please use *.tar.gz.')
@@ -309,5 +321,49 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
     if (fs.existsSync(tarname)) {
       fs.unlinkSync(tarname)
     }
+  }
+}
+
+module.exports.extractTarGz = function (tarnamegz, options) {
+  options = setCommonOptions(options)
+  if (options.full === undefined) {
+    options.full = true
+  }
+
+  if (options.overwrite === undefined) {
+    options.overwrite = true
+  }
+
+  let gz = fs.readFileSync(tarnamegz).toString('base64')
+  let buffer = new Buffer(gz, 'base64')
+  try {
+    zlib.unzip(buffer, function (err, buffer) {
+      if (err) {
+        throw Error
+      }
+
+      let tarname = tarnamegz.replace('.tar.gz', '.tar')
+      if (options.full) {
+        tarname = `__${tarname}__`
+      }
+
+      if (!fs.existsSync(tarname) && options.overwrite) {
+        fs.writeFileSync(tarname, buffer)
+      }
+      let size = fs.lstatSync(tarname)['size']
+
+      if (options.full) {
+        if (USE_NATIVE) {
+          native.extract_tar_entries(tarname,
+          options.full ? 1 : 0, options.overwrite ? 1 : 0, size)
+        } else {
+          let tar = fs.readFileSync(tarname)
+          fs.seekSync(tar, 124, 0)
+        }
+      }
+    })
+  } catch (e) {
+    console.warn(`tarino: Error extracting ${tarnamegz}`)
+    console.log(e)
   }
 }

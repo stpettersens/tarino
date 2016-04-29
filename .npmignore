@@ -1,5 +1,6 @@
 node_modules/
 build/
+__*
 *.tar
 *.tar.gz
 *.tgz

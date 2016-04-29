@@ -13,15 +13,14 @@
 #include "tarino.h"
 
 void export_write_tar_entry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-
     if (info.Length() < 5) {
-        Nan::ThrowTypeError("tarino-native: Wrong number of arguments");
+        Nan::ThrowTypeError("tarino-native (write_tar_entry): Wrong number of arguments");
         return;
     }
 
-    if (!info[0]->IsString() || !info[1]->IsString() 
+    if (!info[0]->IsString() || !info[1]->IsString()
     || !info[2]->IsNumber() || !info[3]->IsNumber() || !info[4]->IsNumber()) {
-        Nan::ThrowTypeError("tarino-native: Arguments should be string, string, number (int), number (int)");
+        Nan::ThrowTypeError("tarino-native (write_tar_entry): Arguments should be string, string, number (int), number (int)");
         return;
     }
 
@@ -37,14 +36,13 @@ void export_write_tar_entry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 void export_write_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-
     if (info.Length() < 2) {
-        Nan::ThrowTypeError("tarino_native: Wrong number of arguments");
+        Nan::ThrowTypeError("tarino-native (write_tar_entries): Wrong number of arguments");
         return;
     }
 
     if (!info[0]->IsString() || !info[1]->IsString()) {
-        Nan::ThrowTypeError("tarino-native: Arguments should be string, string");
+        Nan::ThrowTypeError("tarino-native (write_tar_entries): Arguments should be string, string");
         return;
     }
 
@@ -56,12 +54,36 @@ void export_write_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) 
     info.GetReturnValue().Set(code);
 }
 
+void export_extract_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() < 3) {
+    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Wrong number of arguments");
+    return;
+  }
+
+  if (!info[0]->IsString() || !info[1]->IsNumber() || !info[2]->IsNumber() || !info[3]->IsNumber()) {
+    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Arguments should be string, number (0 or 1), number (0 or 1), number");
+    return;
+  }
+
+  v8::String::Utf8Value tarname(info[0]->ToString());
+  int full = (int)info[1]->NumberValue();
+  int overwrite = (int)info[2]->NumberValue();
+  int size = (int)info[3]->NumberValue();
+  v8::Local<v8::Number> code = Nan::New(
+  extract_tar_entries(std::string(*tarname), full, overwrite, size));
+
+  info.GetReturnValue().Set(code);
+}
+
 void init(v8::Local<v8::Object> exports) {
     exports->Set(Nan::New("write_tar_entry").ToLocalChecked(),
     Nan::New<v8::FunctionTemplate>(export_write_tar_entry)->GetFunction());
 
     exports->Set(Nan::New("write_tar_entries").ToLocalChecked(),
     Nan::New<v8::FunctionTemplate>(export_write_tar_entries)->GetFunction());
+
+    exports->Set(Nan::New("extract_tar_entries").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(export_extract_tar_entries)->GetFunction());
 }
 
 NODE_MODULE(addon, init)

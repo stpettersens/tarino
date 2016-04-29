@@ -8,6 +8,7 @@
   see GPL-LICENSE and MIT-LICENSE respectively.
 */
 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -77,7 +78,7 @@ string dec_to_padded_octal(int num, int length) {
     if(length > (int)octal.str().length()) {
         for(int i = 0; i < (length - (int)octal.str().length()); i++) {
             padding.append("0");
-        } 
+        }
     }
     padded << padding << octal.str();
     return padded.str();
@@ -134,7 +135,7 @@ void patch_tar(string temp, int etype, string checksum) {
     }
 }
 
-string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) { 
+string p_write_tar_entry(string tarname, string filename, int _size, int _modified, int etype) {
     ostringstream contents;
     char nc = (char)0;
     string size = dec_to_padded_octal(_size, 11);
@@ -266,5 +267,44 @@ int write_tar_entries(string tarname, string manifest) {
         part2 << "__" << entries[i].get_part() << "__";
         remove(part2.str().c_str());
     }
+    return 0;
+}
+
+int extract_tar_entries(string tarname, int full, int overwrite, int size) {
+    cout << size << endl;
+    ifstream tar;
+    tar.open(tarname.c_str(), ios::binary);
+    for(int i = 0; i < size; i += 512) {
+        char* filename = new char[100];
+        char* mode = new char[8];
+        char* owner = new char[8];
+        char* group = new char[8];
+        char* esize = new char[12];
+        char* modified = new char[12];
+        char* checksum = new char[8];
+        char* type = new char[1];
+        tar.seekg(i + 100);
+        tar.read(mode, 8);
+        tar.seekg(i + 108);
+        tar.read(owner, 8);
+        tar.seekg(i + 116);
+        tar.read(group, 8);
+        tar.seekg(i + 124);
+        tar.read(esize, 12);
+        tar.seekg(i + 136);
+        tar.read(modified, 12);
+        tar.seekg(i + 148);
+        tar.read(checksum, 8);
+        tar.seekg(i + 156);
+        tar.read(type, 1);
+
+        if(string(type) == "5") {
+            cout << "entry is directory." << endl;
+        }
+
+        cout << i << endl;
+        cout << filename << endl;
+    }
+    tar.close();
     return 0;
 }
