@@ -5,7 +5,7 @@
   "main": "tarino.js",
   "scripts": {
     "install": "node-gyp rebuild",
-    "test": "mocha tarino.test.js"
+    "test": "mocha tarino.test.js --timeout 100000"
   },
   "repository": {
     "type": "git",
@@ -27,8 +27,7 @@
     "binstring": "^0.2.1",
     "fs-extra": "^0.30.0",
     "nan": "^2.2.1",
-    "ssp-dos2unix": "^1.0.0",
-    "wrench": "^1.5.9"
+    "ssp-dos2unix": "^1.0.0"
   },
   "devDependencies": {
     "chai": "^3.5.0"

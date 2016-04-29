@@ -117,7 +117,7 @@ function writeTarEntry (tarname, filename, callback) {
     fm = '0040777'
   } else {
     // contents = fs.readFileSync(filename, 'ascii').toString()
-    contents = dos2unix(filename, {write: true}) 
+    contents = dos2unix(filename, {write: false})
   }
   /**
     * TAR FORMAT SPECIFICATION
@@ -202,7 +202,7 @@ function truncateNew (tarname, entries) {
 }
 
 function setCommonOptions (options) {
-  if (options == undefined) {
+  if (options === undefined) {
     options = {
       native: USE_NATIVE
     }
@@ -225,18 +225,18 @@ function setCommonOptions (options) {
 
 module.exports.createTar = function (tarname, filename, options) {
   options = setCommonOptions(options)
-  if (options.root === undefined) {
+  if (options.root) {
     filename = `${options.root}/${filename}`
   }
 
-  if (options.flat === undefined) {
+  if (options.flat) {
     let fns = filename.split(/\//)
     let flat_fn = fns[fns.length - 1]
     fs.writeFileSync(flat_fn, fs.readFileSync(filename))
     filename = flat_fn
   }
 
-  if (options.folder === undefined) {
+  if (options.folder) {
     if (options.root !== undefined) {
       rdir = filename.split(options.root + '/')[1]
       fs.copySync(filename, rdir)
