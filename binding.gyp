@@ -5,7 +5,7 @@
 			'include_dirs': [
 				"<!(node -e \"require('nan')\")"
 			],
-			'sources': [ 'native/addon.cc', 'native/tarino.cc' ]
+			'sources': [ 'native/addon.cc', 'native/tarino.cc', 'native/dos2unix.cc' ]
 		}
 	]
 }

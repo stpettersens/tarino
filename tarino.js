@@ -116,7 +116,6 @@ function writeTarEntry (tarname, filename, callback) {
     type = 5
     fm = '0040777'
   } else {
-    // contents = fs.readFileSync(filename, 'ascii').toString()
     contents = dos2unix(filename, {write: false})
   }
   /**

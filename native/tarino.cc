@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstdio>
 #include <cstring>
+#include "dos2unix.h"
 using namespace std;
 
 static int EOF_PADDING = 512;
@@ -145,10 +146,7 @@ string p_write_tar_entry(string tarname, string filename, int _size, int _modifi
         fm = "0040777";
     }
     else {
-        ifstream input;
-        input.open(filename.c_str());
-        contents << input.rdbuf();
-        input.close();
+        contents << dos2unix_str(filename);
     }
     /*
         * TAR FORMAT SPECIFICATION
