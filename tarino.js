@@ -116,7 +116,8 @@ function writeTarEntry (tarname, filename, callback) {
     type = 5
     fm = '0040777'
   } else {
-    contents = dos2unix(filename, {write: false})
+    // contents = fs.readFileSync(filename, 'utf8').toString()
+    contents = dos2unix(filename, {native: false, write: false})
   }
   /**
     * TAR FORMAT SPECIFICATION
@@ -349,9 +350,9 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       if (!fs.existsSync(tarname) && options.overwrite) {
         fs.writeFileSync(tarname, buffer)
       }
-      let size = fs.lstatSync(tarname)['size']
 
       if (options.full) {
+        let size = fs.lstatSync(tarname)['size']
         if (USE_NATIVE) {
           native.extract_tar_entries(tarname,
           options.full ? 1 : 0, options.overwrite ? 1 : 0, size)

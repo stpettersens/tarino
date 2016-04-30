@@ -8,15 +8,15 @@
 const tarino = require('./tarino')
 const assert = require('chai').assert
 const fs = require('fs')
-// const os = require('os')
+const os = require('os')
 const _exec = require('child_process').exec
 
 let archives = ['tarino_na.tar', 'tarino_js.tar']
 let sources = ['tarino.js', 'tarino.test.js']
 
-/* let archives_gz = archives.map(function (archive) {
+let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
-}) */
+})
 
 describe('Test tarino:', function () {
   it('Test code conforms to JS Standard Style (http://standardjs.com).', function (done) {
@@ -40,7 +40,7 @@ describe('Test tarino:', function () {
     done()
   })
 
-  /* it('Should create archive (tar) using pure JS implementation.', function (done) {
+  it('Should create archive (tar) using pure JS implementation.', function (done) {
     if (os.platform() !== 'win32') {
       tarino.createTar(archives[1], sources, {native: false, verbose: true})
       if (!fs.existsSync(archives[1])) {
@@ -50,9 +50,9 @@ describe('Test tarino:', function () {
       console.info('\tSkipping this test on Windows:')
     }
     done()
-  }) */
+  })
 
-  /* it('Should create gzipped archive (tar.gz) using native implementation.', function (done) {
+  it('Should create gzipped archive (tar.gz) using native implementation.', function (done) {
     tarino.createTarGz(archives_gz[0], sources, {native: true, verbose: true})
     if (!fs.existsSync(archives_gz[0])) {
       throw Error
@@ -101,5 +101,5 @@ describe('Test tarino:', function () {
       console.info('\tSkipping this test on Windows:')
     }
     done()
-  }) */
+  })
 })
