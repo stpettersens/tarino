@@ -103,4 +103,11 @@ describe('Test tarino:', function () {
     }
     done()
   })
+
+  it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
+    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
+    assert.equal(fs.existsSync(licenses[0]), true)
+    assert.equal(fs.existsSync(licenses[1]), true)
+    done()
+  })
 })
