@@ -15,6 +15,8 @@
 #include <vector>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
+#include <algorithm>
 #include "dos2unix.h"
 using namespace std;
 
@@ -284,7 +286,7 @@ int write_tar_entries(string tarname, string manifest) {
     return 0;
 }
 
-void extract_entry(string tarname, int i, int overwrite) {
+void extract_entry(string tarname, int i, int overwrite, int verbose) {
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
     char* filename = new char[100];
@@ -300,20 +302,33 @@ void extract_entry(string tarname, int i, int overwrite) {
     tar.seekg(i + 116);tar.read(group, 8); tar.seekg(i + 124);
     tar.read(size, 12); tar.seekg(i + 136); tar.read(modified, 12);
     tar.seekg(i + 148);tar.read(checksum, 8); tar.seekg(i + 156);
-    tar.read(type, 1);
+    tar.read(type, 2);
     char* contents = new char[atoi(size)];
     tar.seekg(i + 512); tar.read(contents, atoi(size));
-
-    if(string(type) == "5") {
-        cout << "entry is directory." << endl;
-    }
     tar.close();
 
-    if(overwrite || !file_exists(filename)) {
-        ofstream out;
-        out.open(filename, ofstream::out | ofstream::binary);
-        out << contents;
-        out.close();
+    if(verbose == 1) {
+        cout << filename << endl;
+    }
+
+    if(string(type) == "5") {
+        string command = "mkdir ";
+        #ifdef __unix__
+        command.append("-p ");
+        #else
+        std::replace(filename.begin(), s.end(), '/', '\\')
+        #endif
+        command.append(filename);
+        system(command.c_str());
+    }
+
+    if (string(type) == "0") {
+        if(overwrite || !file_exists(filename)) {
+            ofstream out;
+            out.open(filename, ofstream::out | ofstream::binary);
+            out << contents;
+            out.close();
+        }
     }
 }
 
@@ -322,20 +337,20 @@ int extract_tar_entries(string tarname, int size, int overwrite, int verbose) {
     char* magic = new char[5];
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
-    for(int i = 257; i <= size; i += 5) {
+    for(int i = 257; i <= size; i++) { // size
         tar.seekg(i); tar.read(magic, 6);
-        if(string(magic) == "ustar") {
+        if(string(magic) == "ustar" || string(magic) == "ustar ") {
             offsets.push_back((i + 249) - 506);
         }
     }
     tar.close();
-    
+
     if (verbose == 1) {
         cout << "tarino-native: Extracting " << offsets.size() << " entries from archive." << endl;
     }
 
     for(int i = 0; i < (int)offsets.size(); i++) {
-        extract_entry(tarname, offsets[i], overwrite);
+        extract_entry(tarname, offsets[i], overwrite, verbose);
     }
     return 0;
 }

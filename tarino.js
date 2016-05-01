@@ -14,6 +14,7 @@ const EOF_PADDING = 512
 let USE_NATIVE = false
 
 const fs = require('fs-extra')
+const mkdirp = require('mkdirp')
 const conv = require('binstring')
 const zlib = require('zlib')
 const os = require('os')
@@ -346,19 +347,25 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
   }
 }
 
-function extractEntry (tar, o, overwrite) {
+function extractEntry (tar, o, options) {
   let filename = readStrValue(tar, o, 99)
   let size = readNumValue(tar, o + 124, 12)
   let type = readNumValue(tar, o + 156, 1)
 
+  let fn = trimFilename(filename)
+  if (options.verbose) {
+    console.info(fn)
+  }
+
   if (type === 5) {
-    console.log('entry is directory.')
+    mkdirp.sync(fn)
   }
 
   let contents = readStrValue(tar, o + 512, size)
-  let fn = trimFilename(filename)
-  if (overwrite || !fs.existsSync(fn)) {
-    fs.writeFileSync(fn, contents)
+  if (type === 0) {
+    if (options.overwrite || !fs.existsSync(fn)) {
+      fs.outputFileSync(fn, contents)
+    }
   }
 }
 
@@ -385,7 +392,7 @@ function extractTar (tarname, options) {
       console.info('tarino: Extracting %d entries from archive.', offsets.length)
     }
     offsets.map(function (o) {
-      extractEntry(tar, o, options.overwrite)
+      extractEntry(tar, o, options)
     })
   }
 }
@@ -408,7 +415,6 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       if (err) {
         throw Error
       }
-
       let tarname = tarnamegz.replace(/\.gz$/, '')
 
       if (options.full) {
