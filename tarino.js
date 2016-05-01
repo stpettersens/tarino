@@ -375,6 +375,9 @@ function extractTar (tarname, options) {
   }
 
   let size = fs.lstatSync(tarname)['size']
+
+  console.log(size)
+
   if (USE_NATIVE) {
     native.extract_tar_entries(tarname, size,
     options.overwrite ? 1 : 0, options.verbose ? 1 : 0)
