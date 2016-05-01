@@ -382,8 +382,7 @@ function extractEntry (tar, o, overwrite) {
   }
 }
 
-function extractTar (tarname, options) {
-  options = setCommonOptions(options)
+function extractTarr (tarname, options) {
   if (options.overwrite === undefined) {
     options.overwrite = true
   }
@@ -407,7 +406,6 @@ function extractTar (tarname, options) {
   }
 }
 
-module.exports.extractTar = extractTar
 module.exports.extractTarGz = function (tarnamegz, options) {
   options = setCommonOptions(options)
   if (options.full === undefined) {
@@ -433,7 +431,7 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       }
 
       if (options.full) {
-        extractTar(tarname, options)
+        extractTarr(tarname, options)
       }
     })
   } catch (e) {

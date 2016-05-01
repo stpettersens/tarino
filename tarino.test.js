@@ -19,6 +19,10 @@ let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
 })
 
+/* describe('Test tarino:', function () {
+
+}) */
+
 describe('Test tarino:', function () {
   it('Test code conforms to JS Standard Style (http://standardjs.com).', function (done) {
     _exec(`standard ${sources.join(' ')}`, function (err, stdout, stderr) {
@@ -31,6 +35,16 @@ describe('Test tarino:', function () {
       assert.equal(passed, true)
       done()
     })
+  })
+
+  it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
+    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
+    done()
+  })
+
+  it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
+    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true})
+    done()
   })
 
   it('Should create archive (tar) using native implementation.', function (done) {
@@ -101,13 +115,6 @@ describe('Test tarino:', function () {
     } else {
       console.info('\tSkipping this test on Windows:')
     }
-    done()
-  })
-
-  it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
-    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
-    assert.equal(fs.existsSync(licenses[0]), true)
-    assert.equal(fs.existsSync(licenses[1]), true)
     done()
   })
 })
