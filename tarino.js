@@ -215,7 +215,7 @@ function readNumValue (data, start, length) {
 
 function trimFilename (filename) {
   let fn = ''
-  for(let i = 0; i < filename.length; i++) {
+  for (let i = 0; i < filename.length; i++) {
     if (filename.charCodeAt(i) === 0) break
     fn += filename[i]
   }
@@ -225,7 +225,8 @@ function trimFilename (filename) {
 function setCommonOptions (options) {
   if (options === undefined) {
     options = {
-      native: USE_NATIVE
+      native: USE_NATIVE,
+      verbose: false
     }
   }
 
@@ -376,7 +377,6 @@ function extractEntry (tar, o, overwrite) {
   console.log('Overwrite? ', overwrite)
   console.log('Exists? ', fs.existsSync(fn))
 
-  
   if (overwrite || !fs.existsSync(fn)) {
     fs.writeFileSync(fn, contents)
   }
@@ -401,7 +401,7 @@ function extractTar (tarname, options) {
       }
     }
     console.log('There are ', offsets.length, ' entries.') // !
-    offsets.map (function (o) {
+    offsets.map(function (o) {
       extractEntry(tar, o, options.overwrite)
     })
   }
@@ -423,11 +423,12 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       }
 
       let tarname = tarnamegz.replace(/\.gz$/, '')
+
       if (options.full) {
         tarname = `__${tarname}__`
       }
 
-      if (!fs.existsSync(tarname) && options.overwrite) {
+      if (!fs.existsSync(tarname) || options.overwrite) {
         fs.writeFileSync(tarname, buffer)
       }
 

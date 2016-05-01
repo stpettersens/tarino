@@ -7,12 +7,13 @@
 
 const tarino = require('./tarino')
 const assert = require('chai').assert
-const fs = require('fs')
+const fs = require('fs-extra')
 const os = require('os')
 const _exec = require('child_process').exec
 
 let archives = ['tarino_na.tar', 'tarino_js.tar']
 let sources = ['tarino.js', 'tarino.test.js']
+let licenses = ['GPL-LICENSE', 'MIT-LICENSE']
 
 let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
@@ -53,7 +54,7 @@ describe('Test tarino:', function () {
   })
 
   it('Should create gzipped archive (tar.gz) using native implementation.', function (done) {
-    tarino.createTarGz(archives_gz[0], sources, {native: true, verbose: true})
+    tarino.createTarGz(archives_gz[0], licenses, {native: true, verbose: true})
     if (!fs.existsSync(archives_gz[0])) {
       throw Error
     }
@@ -62,7 +63,7 @@ describe('Test tarino:', function () {
 
   it('Should create gzipped archive (tar.gz) using pure JS implementation.', function (done) {
     if (os.platform() !== 'win32') {
-      tarino.createTarGz(archives_gz[1], sources, {native: false, verbose: true})
+      tarino.createTarGz(archives_gz[1], licenses, {native: false, verbose: true})
       if (!fs.existsSync(archives_gz[1])) {
         throw Error
       }
@@ -72,7 +73,7 @@ describe('Test tarino:', function () {
     done()
   })
 
-  it('Archives created by native and pure JS implementations should be equal', function (done) {
+  it('Archives created by native and pure JS implementations should be equal.', function (done) {
     let stats = []
     if (os.platform() !== 'win32') {
       archives.map(function (archive) {
