@@ -201,6 +201,27 @@ function truncateNew (tarname, entries) {
   }
 }
 
+function readStrValue (data, start, length) {
+  let value = ''
+  for (let i = start; i < (start + length); i++) {
+    value += String.fromCharCode(data[i])
+  }
+  return value
+}
+
+function readNumValue (data, start, length) {
+  return parseInt(readStrValue(data, start, length), 10)
+}
+
+function trimFilename (filename) {
+  let fn = ''
+  for(let i = 0; i < filename.length; i++) {
+    if (filename.charCodeAt(i) === 0) break
+    fn += filename[i]
+  }
+  return fn
+}
+
 function setCommonOptions (options) {
   if (options === undefined) {
     options = {
@@ -324,14 +345,73 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
   }
 }
 
+function extractEntry (tar, o, overwrite) {
+  let filename = readStrValue(tar, o, 99)
+  let mode = readNumValue(tar, o + 100, 8)
+  let owner = readNumValue(tar, o + 108, 8)
+  let group = readNumValue(tar, o + 116, 8)
+  let size = readNumValue(tar, o + 124, 12)
+  let modified = readNumValue(tar, o + 136, 12)
+  let checksum = readNumValue(tar, o + 148, 8)
+  let type = readNumValue(tar, o + 156, 1)
+
+  if (type === 5) {
+    console.log('entry is directory.')
+  }
+
+  console.log('------------')
+  console.log(filename)
+  console.log(mode)
+  console.log(owner)
+  console.log(group)
+  console.log(size)
+  console.log(modified)
+  console.log(checksum)
+  console.log(type)
+  console.log('------------')
+
+  let contents = readStrValue(tar, o + 512, size)
+  let fn = trimFilename(filename)
+
+  console.log('Overwrite? ', overwrite)
+  console.log('Exists? ', fs.existsSync(fn))
+
+  
+  if (overwrite || !fs.existsSync(fn)) {
+    fs.writeFileSync(fn, contents)
+  }
+}
+
+function extractTar (tarname, options) {
+  options = setCommonOptions(options)
+  if (options.overwrite === undefined) {
+    options.overwrite = true
+  }
+
+  let size = fs.lstatSync(tarname)['size']
+  if (USE_NATIVE) {
+    native.extract_tar_entries(tarname, size, options.overwrite ? 1 : 0)
+  } else {
+    let offsets = []
+    let tar = fs.readFileSync(tarname)
+    for (let i = 257; i <= size; i++) {
+      let magic = readStrValue(tar, i, 5)
+      if (magic === 'ustar') {
+        offsets.push((i + 249) - 506)
+      }
+    }
+    console.log('There are ', offsets.length, ' entries.') // !
+    offsets.map (function (o) {
+      extractEntry(tar, o, options.overwrite)
+    })
+  }
+}
+
+module.exports.extractTar = extractTar
 module.exports.extractTarGz = function (tarnamegz, options) {
   options = setCommonOptions(options)
   if (options.full === undefined) {
     options.full = true
-  }
-
-  if (options.overwrite === undefined) {
-    options.overwrite = true
   }
 
   let gz = fs.readFileSync(tarnamegz).toString('base64')
@@ -342,7 +422,7 @@ module.exports.extractTarGz = function (tarnamegz, options) {
         throw Error
       }
 
-      let tarname = tarnamegz.replace('.tar.gz', '.tar')
+      let tarname = tarnamegz.replace(/\.gz$/, '')
       if (options.full) {
         tarname = `__${tarname}__`
       }
@@ -352,14 +432,7 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       }
 
       if (options.full) {
-        let size = fs.lstatSync(tarname)['size']
-        if (USE_NATIVE) {
-          native.extract_tar_entries(tarname,
-          options.full ? 1 : 0, options.overwrite ? 1 : 0, size)
-        } else {
-          let tar = fs.readFileSync(tarname)
-          fs.seekSync(tar, 124, 0)
-        }
+        extractTar(tarname, options)
       }
     })
   } catch (e) {

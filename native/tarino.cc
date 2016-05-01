@@ -72,6 +72,11 @@ vector<string> split(string str, char delimiter) {
     return internal;
 }
 
+bool file_exists(const char* filename) {
+    ifstream f(filename);
+    return f.good();
+}
+
 string dec_to_padded_octal(int num, int length) {
     ostringstream octal, padded;
     octal << std::oct << num;
@@ -103,7 +108,7 @@ int get_padding(string data) {
         if((int)data.length() <= padding) break;
         m++;
     }
-    return padding + 512;
+    return padding + EOF_PADDING;
 }
 
 string write_padded_data(string data) {
@@ -279,55 +284,65 @@ int write_tar_entries(string tarname, string manifest) {
     return 0;
 }
 
-int extract_tar_entries(string tarname, int full, int overwrite, int size) {
-    cout << size << endl;
-
-    bool extracting = true;
-    int chunks = size / 512;
-    int x = 0;
-    int i = 35840;
+void extract_entry(string tarname, int i, int overwrite) {
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
     char* filename = new char[100];
     char* mode = new char[8];
     char* owner = new char[8];
     char* group = new char[8];
-    char* esize = new char[12];
+    char* size = new char[12];
     char* modified = new char[12];
     char* checksum = new char[8];
     char* type = new char[1];
-    while(extracting) {
+    tar.seekg(i); tar.read(filename, 99); tar.seekg(i + 100);
+    tar.read(mode, 8);tar.seekg(i + 108); tar.read(owner, 8);
+    tar.seekg(i + 116);tar.read(group, 8); tar.seekg(i + 124);
+    tar.read(size, 12); tar.seekg(i + 136); tar.read(modified, 12); 
+    tar.seekg(i + 148);tar.read(checksum, 8); tar.seekg(i + 156);
+    tar.read(type, 1);
+    char* contents = new char[atoi(size)];
+    tar.seekg(i + 512); tar.read(contents, atoi(size));
 
-        cout << "I IS NOW " << i << endl;
+    if(string(type) == "5") {
+        cout << "entry is directory." << endl;
+    }
 
-        tar.seekg(i); tar.read(filename, 99); tar.seekg(i + 100); tar.read(mode, 8);
-        tar.seekg(i + 108); tar.read(owner, 8); tar.seekg(i + 116);
-        tar.read(group, 8); tar.seekg(i + 124); tar.read(esize, 12);
-        tar.seekg(i + 136); tar.read(modified, 12); tar.seekg(i + 148);
-        tar.read(checksum, 8); tar.seekg(i + 156); tar.read(type, 1);
-        char* contents = new char[atoi(esize)];
-        tar.seekg(i + 512); tar.read(contents, atoi(esize));
+    string strcontents = string(contents);
+    cout << "Entry length: " << strcontents.length() << endl;
+    cout << "with padding: " << get_padding(strcontents) << endl;
+    cout << "Entry filename: " << filename << endl;
+    cout << "Entry contents:\n" << strcontents << endl;
+    tar.close();
 
-        if(string(type) == "5") {
-            cout << "entry is directory." << endl;
-        }
+    cout << "Overwrite? " << overwrite << endl;
+    cout << "Exists? " << file_exists(filename) << endl;
 
-        string strcontents = string(contents);
-        cout << "Chunks: " << chunks << endl;
-        cout << "Entry length: " << strcontents.length() << endl;
-        cout << "with padding: " << get_padding(strcontents) << endl;
-        cout << "Entry filename: " << filename << endl;
-        cout << "Entry contents:\n" << strcontents << endl;
-        i += get_padding(strcontents);
-        if(x == 2) break;
-        x++;
-        /*
+    if(overwrite || !file_exists(filename)) {
         ofstream out;
         out.open(filename, ofstream::out | ofstream::binary);
         out << contents;
-        out.close();*/
+        out.close();
+    }
+}
+
+int extract_tar_entries(string tarname, int size, int overwrite) {
+    vector<int> offsets;
+    char* magic = new char[5];
+
+    ifstream tar;
+    tar.open(tarname.c_str(), ios::binary);
+    for(int i = 257; i <= size; i += 5) {
+        tar.seekg(i); tar.read(magic, 6);
+        if(string(magic) == "ustar") {
+            offsets.push_back((i + 249) - 506);
+        }
     }
     tar.close();
+
+    for(int i = 0; i < (int)offsets.size(); i++) {
+        extract_entry(tarname, offsets[i], overwrite);
+    }
 
     return 0;
 }

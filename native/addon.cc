@@ -60,17 +60,16 @@ void export_extract_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info
     return;
   }
 
-  if (!info[0]->IsString() || !info[1]->IsNumber() || !info[2]->IsNumber() || !info[3]->IsNumber()) {
-    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Arguments should be string, number (0 or 1), number (0 or 1), number");
+  if (!info[0]->IsString() || !info[1]->IsNumber() || !info[2]->IsNumber()) {
+    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Arguments should be string, number, number (0 or 1)");
     return;
   }
 
   v8::String::Utf8Value tarname(info[0]->ToString());
-  int full = (int)info[1]->NumberValue();
+  int size = (int)info[1]->NumberValue();
   int overwrite = (int)info[2]->NumberValue();
-  int size = (int)info[3]->NumberValue();
   v8::Local<v8::Number> code = Nan::New(
-  extract_tar_entries(std::string(*tarname), full, overwrite, size));
+  extract_tar_entries(std::string(*tarname), size, overwrite));
 
   info.GetReturnValue().Set(code);
 }
