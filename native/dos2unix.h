@@ -5,7 +5,7 @@ Copyright 2016 Sam Saint-Pettersen.
 Native add-on.
 
 Released under the MIT License;
-see LICENSE file.
+see MIT-LICENSE file.
 */
 
 #ifndef __DOS2UNIX

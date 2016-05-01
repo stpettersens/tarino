@@ -19,10 +19,6 @@ let archives_gz = archives.map(function (archive) {
   return archive + '.gz'
 })
 
-/* describe('Test tarino:', function () {
-
-}) */
-
 describe('Test tarino:', function () {
   it('Test code conforms to JS Standard Style (http://standardjs.com).', function (done) {
     _exec(`standard ${sources.join(' ')}`, function (err, stdout, stderr) {

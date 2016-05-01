@@ -298,7 +298,7 @@ void extract_entry(string tarname, int i, int overwrite) {
     tar.seekg(i); tar.read(filename, 99); tar.seekg(i + 100);
     tar.read(mode, 8);tar.seekg(i + 108); tar.read(owner, 8);
     tar.seekg(i + 116);tar.read(group, 8); tar.seekg(i + 124);
-    tar.read(size, 12); tar.seekg(i + 136); tar.read(modified, 12); 
+    tar.read(size, 12); tar.seekg(i + 136); tar.read(modified, 12);
     tar.seekg(i + 148);tar.read(checksum, 8); tar.seekg(i + 156);
     tar.read(type, 1);
     char* contents = new char[atoi(size)];
@@ -307,16 +307,7 @@ void extract_entry(string tarname, int i, int overwrite) {
     if(string(type) == "5") {
         cout << "entry is directory." << endl;
     }
-
-    string strcontents = string(contents);
-    cout << "Entry length: " << strcontents.length() << endl;
-    cout << "with padding: " << get_padding(strcontents) << endl;
-    cout << "Entry filename: " << filename << endl;
-    cout << "Entry contents:\n" << strcontents << endl;
     tar.close();
-
-    cout << "Overwrite? " << overwrite << endl;
-    cout << "Exists? " << file_exists(filename) << endl;
 
     if(overwrite || !file_exists(filename)) {
         ofstream out;
@@ -326,10 +317,9 @@ void extract_entry(string tarname, int i, int overwrite) {
     }
 }
 
-int extract_tar_entries(string tarname, int size, int overwrite) {
+int extract_tar_entries(string tarname, int size, int overwrite, int verbose) {
     vector<int> offsets;
     char* magic = new char[5];
-
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
     for(int i = 257; i <= size; i += 5) {
@@ -339,10 +329,13 @@ int extract_tar_entries(string tarname, int size, int overwrite) {
         }
     }
     tar.close();
+    
+    if (verbose == 1) {
+        cout << "tarino-native: Extracting " << offsets.size() << " entries from archive." << endl;
+    }
 
     for(int i = 0; i < (int)offsets.size(); i++) {
         extract_entry(tarname, offsets[i], overwrite);
     }
-
     return 0;
 }

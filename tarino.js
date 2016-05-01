@@ -348,48 +348,29 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
 
 function extractEntry (tar, o, overwrite) {
   let filename = readStrValue(tar, o, 99)
-  let mode = readNumValue(tar, o + 100, 8)
-  let owner = readNumValue(tar, o + 108, 8)
-  let group = readNumValue(tar, o + 116, 8)
   let size = readNumValue(tar, o + 124, 12)
-  let modified = readNumValue(tar, o + 136, 12)
-  let checksum = readNumValue(tar, o + 148, 8)
   let type = readNumValue(tar, o + 156, 1)
 
   if (type === 5) {
     console.log('entry is directory.')
   }
 
-  console.log('------------')
-  console.log(filename)
-  console.log(mode)
-  console.log(owner)
-  console.log(group)
-  console.log(size)
-  console.log(modified)
-  console.log(checksum)
-  console.log(type)
-  console.log('------------')
-
   let contents = readStrValue(tar, o + 512, size)
   let fn = trimFilename(filename)
-
-  console.log('Overwrite? ', overwrite)
-  console.log('Exists? ', fs.existsSync(fn))
-
   if (overwrite || !fs.existsSync(fn)) {
     fs.writeFileSync(fn, contents)
   }
 }
 
-function extractTarr (tarname, options) {
+function extractTar (tarname, options) {
   if (options.overwrite === undefined) {
     options.overwrite = true
   }
 
   let size = fs.lstatSync(tarname)['size']
   if (USE_NATIVE) {
-    native.extract_tar_entries(tarname, size, options.overwrite ? 1 : 0)
+    native.extract_tar_entries(tarname, size,
+    options.overwrite ? 1 : 0, options.verbose ? 1 : 0)
   } else {
     let offsets = []
     let tar = fs.readFileSync(tarname)
@@ -399,11 +380,19 @@ function extractTarr (tarname, options) {
         offsets.push((i + 249) - 506)
       }
     }
-    console.log('There are ', offsets.length, ' entries.') // !
+
+    if (options.verbose) {
+      console.info('tarino: Extracting %d entries from archive.', offsets.length)
+    }
     offsets.map(function (o) {
       extractEntry(tar, o, options.overwrite)
     })
   }
+}
+
+module.exports.extractTar = function (tarname, options) {
+  options = setCommonOptions(options)
+  extractTar(tarname, options)
 }
 
 module.exports.extractTarGz = function (tarnamegz, options) {
@@ -431,8 +420,9 @@ module.exports.extractTarGz = function (tarnamegz, options) {
       }
 
       if (options.full) {
-        extractTarr(tarname, options)
+        extractTar(tarname, options)
       }
+      fs.unlinkSync(tarname)
     })
   } catch (e) {
     console.warn(`tarino: Error extracting ${tarnamegz}`)
