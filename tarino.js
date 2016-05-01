@@ -421,8 +421,8 @@ module.exports.extractTarGz = function (tarnamegz, options) {
 
       if (options.full) {
         extractTar(tarname, options)
+        fs.unlinkSync(tarname)
       }
-      fs.unlinkSync(tarname)
     })
   } catch (e) {
     console.warn(`tarino: Error extracting ${tarnamegz}`)
