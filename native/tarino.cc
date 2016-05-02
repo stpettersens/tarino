@@ -324,7 +324,7 @@ void extract_entry(string tarname, int i, int overwrite, int verbose, int extrac
     char* contents = new char[atoi(size)];
     tar.seekg(i + 512); tar.read(contents, atoi(size));
     tar.close();
-    
+
     if(verbose == 1 && extract == 1) {
         cout << filename << endl;
     }
@@ -338,7 +338,7 @@ void extract_entry(string tarname, int i, int overwrite, int verbose, int extrac
         #ifdef __unix__
         command.append("-p ");
         #else
-        std::replace(filename.begin(), filename.end(), '/', '\\')
+        std::replace(filename.begin(), filename.end(), '/', '\\');
         #endif
         command.append(filename);
         int ec = system(command.c_str());
