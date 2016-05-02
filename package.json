@@ -5,7 +5,7 @@
   "main": "tarino.js",
   "scripts": {
     "install": "node-gyp rebuild",
-    "test": "mocha tarino.test.js --timeout 100000"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,11 @@
     "ssp-dos2unix": "^1.0.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0"
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-mocha": "^2.2.0",
+    "gulp-sequence": "^0.4.5",
+    "gulp-wait": "0.0.2",
+    "standard": "^7.0.0"
   }
 }

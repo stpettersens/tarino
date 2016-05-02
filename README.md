@@ -13,12 +13,7 @@
 ##### Tests
 
 If you want to run the tests, install without `--production` flag
-and then install [Mocha](https://github.com/mochajs/mocha) and [standard](https://github.com/feross/standard) globally:
-
-- `npm install -g mocha`
-- `npm install -g standard`
-
-Then run tests with:
+and then run:
 
 - `npm test`
 
