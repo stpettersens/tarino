@@ -15,7 +15,7 @@ let archives = ['tarino_na.tar', 'tarino_js.tar']
 let sources = ['tarino.js', 'tarino.test.js']
 let licenses = ['GPL-LICENSE', 'MIT-LICENSE']
 
-let archives_gz = archives.map(function (archive) {
+let archivesGz = archives.map(function (archive) {
   return archive + '.gz'
 })
 
@@ -76,8 +76,8 @@ describe('Test tarino:', function () {
   })
 
   it('Should create gzipped archive (tar.gz) using native implementation.', function (done) {
-    tarino.createTarGz(archives_gz[0], licenses, {native: true, verbose: true})
-    if (!fs.existsSync(archives_gz[0])) {
+    tarino.createTarGz(archivesGz[0], licenses, {native: true, verbose: true})
+    if (!fs.existsSync(archivesGz[0])) {
       throw Error
     }
     done()
@@ -85,8 +85,8 @@ describe('Test tarino:', function () {
 
   it('Should create gzipped archive (tar.gz) using pure JS implementation.', function (done) {
     if (os.platform() !== 'win32') {
-      tarino.createTarGz(archives_gz[1], licenses, {native: false, verbose: true})
-      if (!fs.existsSync(archives_gz[1])) {
+      tarino.createTarGz(archivesGz[1], licenses, {native: false, verbose: true})
+      if (!fs.existsSync(archivesGz[1])) {
         throw Error
       }
     } else {
@@ -109,7 +109,7 @@ describe('Test tarino:', function () {
           }
         })
       })
-      archives_gz.map(function (archive_gz) {
+      archivesGz.map(function (archive_gz) {
         fs.lstat(archive_gz, function (err, stat) {
           if (err) {
             throw Error

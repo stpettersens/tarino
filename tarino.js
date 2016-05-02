@@ -261,9 +261,9 @@ module.exports.createTar = function (tarname, filename, options) {
 
   if (options.flat) {
     let fns = filename.split(/\//)
-    let flat_fn = fns[fns.length - 1]
-    fs.writeFileSync(flat_fn, fs.readFileSync(filename))
-    filename = flat_fn
+    let flatFn = fns[fns.length - 1]
+    fs.writeFileSync(flatFn, fs.readFileSync(filename))
+    filename = flatFn
   }
 
   if (options.folder) {
