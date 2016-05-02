@@ -7,6 +7,7 @@ const sequence = require('gulp-sequence')
 gulp.task('test1', function () {
   return gulp.src('tarino.test1.js')
   .pipe(mocha({reporter: 'min', timeout: 100000}))
+  .pipe(wait(1500))
 })
 
 gulp.task('test2', function () {

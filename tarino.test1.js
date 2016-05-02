@@ -12,7 +12,7 @@ const os = require('os')
 const _exec = require('child_process').exec
 
 let archives = ['tarino_na.tar', 'tarino_js.tar']
-let sources = ['tarino.js', 'tarino.test1.js', 'tarino.test2.js']
+let sources = ['tarino.js', 'tarino.test1.js', 'tarino.test2.js', 'Gulpfile.js']
 let licenses = ['GPL-LICENSE', 'MIT-LICENSE']
 
 let archivesGz = archives.map(function (archive) {
@@ -33,15 +33,15 @@ describe('Test tarino 1/2:', function () {
     })
   })
 
-  it('Should extract gzipped archive (tar.gz) using native implementation (full contents).', function (done) {
-    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
-    assert.equal(fs.existsSync('GPL-LICENSE'), true)
+  it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
+    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true, full: true})
+    assert.equal(fs.existsSync(licenses[0]), true)
     done()
   })
 
-  it('Should extract gzipped archive (tar.gz) using pure JS implementation (just tar).', function (done) {
-    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, full: false})
-    assert.equal(fs.existsSync('tarino.tar'), true)
+  it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
+    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, fall: true})
+    assert.equal(fs.existsSync(licenses[1]), true)
     done()
   })
 
