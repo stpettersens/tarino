@@ -34,24 +34,24 @@ describe('Test tarino:', function () {
   })
 
   it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
-    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true, full: false})
+    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
     assert.equal(fs.existsSync('tarino.tar'), true)
     done()
   })
 
   it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
-    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, full: false})
+    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true})
     assert.equal(fs.existsSync('tarino.tar'), true)
     done()
   })
 
   it('Should list contents of archive (tar) using native implementation.', function (done) {
-    tarino.listTar('tarino.tar.gz', {native: true, verbose: true})
+    tarino.listTar('tarino.tar', {native: true, verbose: true})
     done()
   })
 
   it('Should list contents of archive (tar) using pure JS implementation.', function (done) {
-    tarino.listTar('tarino.tar.gz', {native: false, verbose: true})
+    tarino.listTar('tarino.tar', {native: false, verbose: true})
     done()
   })
 
