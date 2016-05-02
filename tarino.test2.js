@@ -9,7 +9,7 @@ const tarino = require('./tarino')
 
 describe('Test tarino 2/2:', function () {
   it('Should list contents of archive (tar) using native implementation.', function (done) {
-    tarino.listTar('tarino.tar', {native: true, verbose: true})
+    tarino.listTar('tarino.tar', {native: true, verbose: false})
     done()
   })
 
