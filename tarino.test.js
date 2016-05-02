@@ -109,7 +109,7 @@ describe('Test tarino:', function () {
           }
         })
       })
-      archivesGz.map(function (archivesGz) {
+      archivesGz.map(function (archiveGz) {
         fs.lstat(archiveGz, function (err, stat) {
           if (err) {
             throw Error
