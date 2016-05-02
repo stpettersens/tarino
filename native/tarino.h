@@ -14,5 +14,6 @@
 int write_tar_entry(std::string, std::string, int, int, int);
 int write_tar_entries(std::string, std::string);
 int extract_tar_entries(std::string, int, int, int);
+int list_tar_entries(std::string, int, int);
 
 #endif

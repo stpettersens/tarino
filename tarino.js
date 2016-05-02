@@ -52,6 +52,14 @@ function decToPaddedOctal (num, length) {
   return padding + octal
 }
 
+function padStr (data, length) {
+  let padding = ''
+  for (let i = 0; i < length - data.length; i++) {
+    padding += ' '
+  }
+  return padding + data
+}
+
 function padData (length) {
   let padding = ''
   for (let i = 1; i < length; i++) {
@@ -117,7 +125,6 @@ function writeTarEntry (tarname, filename, callback) {
     type = 5
     fm = '0040777'
   } else {
-    // contents = fs.readFileSync(filename, 'utf8').toString()
     contents = dos2unix(filename, {native: false, write: false})
   }
   /**
@@ -347,37 +354,43 @@ module.exports.createTarGz = function (tarnamegz, filename, options) {
   }
 }
 
-function extractEntry (tar, o, options) {
+function extractEntry (tar, o, options, extract) {
   let filename = readStrValue(tar, o, 99)
+  let mode = readNumValue(tar, o + 100, 8)
+  // let owner = readNumValue(tar, o + 108, 8)
+  // let group = readNumValue(tar, o + 116, 8)
   let size = readNumValue(tar, o + 124, 12)
+  let modified = readNumValue(tar, o + 136, 12)
+  // let checksum = readNumValue(tar, o + 148, 8)
   let type = readNumValue(tar, o + 156, 1)
 
   let fn = trimFilename(filename)
-  if (options.verbose) {
+  if (options.verbose && extract) {
     console.info(fn)
+  } else {
+    modified = new Date(parseInt(modified, 8) * 1000).toString().substr(0, 24)
+    console.info(mode + '  ' + padStr(size.toString(), 10) + '  ' + modified + '  ' + fn)
   }
 
-  if (type === 5) {
+  if (type === 5 && extract) {
     mkdirp.sync(fn)
   }
 
-  let contents = readStrValue(tar, o + 512, size)
-  if (type === 0) {
+  let contents = ''
+  if (type === 0 && extract) {
+    contents = readStrValue(tar, o + 512, size)
     if (options.overwrite || !fs.existsSync(fn)) {
       fs.outputFileSync(fn, contents)
     }
   }
 }
 
-function extractTar (tarname, options) {
+function extractTar (tarname, options, extract) {
   if (options.overwrite === undefined) {
     options.overwrite = true
   }
 
   let size = fs.lstatSync(tarname)['size']
-
-  console.log(size)
-
   if (USE_NATIVE) {
     native.extract_tar_entries(tarname, size,
     options.overwrite ? 1 : 0, options.verbose ? 1 : 0)
@@ -391,34 +404,27 @@ function extractTar (tarname, options) {
       }
     }
 
-    if (options.verbose) {
-      console.info('tarino: Extracting %d entries from archive.', offsets.length)
+    if (options.verbose && extract) {
+      console.info('tarino: Extracting %d entries from archive.\n', offsets.length)
+    } else if (options.verbose) {
+      console.info('tarino: Listing %d entries from archive.\n', offsets.length)
     }
     offsets.map(function (o) {
-      extractEntry(tar, o, options)
+      extractEntry(tar, o, options, extract)
     })
   }
 }
 
-module.exports.extractTar = function (tarname, options) {
-  options = setCommonOptions(options)
-  extractTar(tarname, options)
-}
-
-module.exports.extractTarGz = function (tarnamegz, options) {
-  options = setCommonOptions(options)
-  if (options.full === undefined) {
-    options.full = true
-  }
-
+function extractTarGz (tarnamegz, options) {
   let gz = fs.readFileSync(tarnamegz).toString('base64')
   let buffer = new Buffer(gz, 'base64')
+  let tarname = tarnamegz.replace(/\.gz$/, '')
   try {
     zlib.unzip(buffer, function (err, buffer) {
       if (err) {
+        console.warn(err)
         throw Error
       }
-      let tarname = tarnamegz.replace(/\.gz$/, '')
 
       if (options.full) {
         tarname = `__${tarname}__`
@@ -428,13 +434,40 @@ module.exports.extractTarGz = function (tarnamegz, options) {
         fs.writeFileSync(tarname, buffer)
       }
 
+      if (options.verbose) {
+        console.info('tarino: Extracting gzipped archive...')
+      }
+
       if (options.full) {
-        extractTar(tarname, options)
+        extractTar(tarname, options, true)
         fs.unlinkSync(tarname)
       }
     })
   } catch (e) {
     console.warn(`tarino: Error extracting ${tarnamegz}`)
     console.log(e)
+  }
+}
+
+module.exports.extractTar = function (tarname, options) {
+  options = setCommonOptions(options)
+  extractTar(tarname, options, true)
+}
+
+module.exports.extractTarGz = function (tarnamegz, options) {
+  options = setCommonOptions(options)
+  if (options.full === undefined) {
+    options.full = true
+  }
+  extractTarGz(tarnamegz, options)
+}
+
+module.exports.listTar = function (tarname, options) {
+  options = setCommonOptions(options)
+  let size = fs.lstatSync(tarname)['size']
+  if (USE_NATIVE) {
+    native.list_tar_entries(tarname, size, options.verbose ? 1 : 0)
+  } else {
+    extractTar(tarname, options, false)
   }
 }

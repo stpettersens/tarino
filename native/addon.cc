@@ -55,25 +55,44 @@ void export_write_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) 
 }
 
 void export_extract_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-  if (info.Length() < 4) {
-    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Wrong number of arguments");
-    return;
-  }
+    if (info.Length() < 4) {
+        Nan::ThrowTypeError("tarino-native (extract_tar_entries): Wrong number of arguments");
+        return;
+    }
 
-  if (!info[0]->IsString() || !info[1]->IsNumber()
-  || !info[2]->IsNumber() || !info[3]->IsNumber()) {
-    Nan::ThrowTypeError("tarino-native (extract_tar_entries): Arguments should be string, number, number (0 or 1) x2");
-    return;
-  }
+    if (!info[0]->IsString() || !info[1]->IsNumber() || !info[2]->IsNumber() || !info[3]->IsNumber()) {
+        Nan::ThrowTypeError("tarino-native (extract_tar_entries): Arguments should be string, number, number (0 or 1) x2");
+        return;
+    }
 
-  v8::String::Utf8Value tarname(info[0]->ToString());
-  int size = (int)info[1]->NumberValue();
-  int overwrite = (int)info[2]->NumberValue();
-  int verbose = (int)info[3]->NumberValue();
-  v8::Local<v8::Number> code = Nan::New(
-  extract_tar_entries(std::string(*tarname), size, overwrite, verbose));
+    v8::String::Utf8Value tarname(info[0]->ToString());
+    int size = (int)info[1]->NumberValue();
+    int overwrite = (int)info[2]->NumberValue();
+    int verbose = (int)info[3]->NumberValue();
+    v8::Local<v8::Number> code = Nan::New(
+    extract_tar_entries(std::string(*tarname), size, overwrite, verbose));
 
-  info.GetReturnValue().Set(code);
+    info.GetReturnValue().Set(code);
+}
+
+void export_list_tar_entries(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+    if (info.Length() < 3) {
+        Nan::ThrowTypeError("tarino-native (list_tar_entries): Wrong number of arguments");
+        return;
+    }
+
+    if (!info[0]->IsString() || !info[1]->IsNumber() || !info[2]->IsNumber()) {
+        Nan::ThrowTypeError("tarino-native (list_tar_entries): Arguments should be string, number, number (0 or 1)");
+        return;
+    }
+
+    v8::String::Utf8Value tarname(info[0]->ToString());
+    int size = (int)info[1]->NumberValue();
+    int verbose = (int)info[2]->NumberValue();
+    v8::Local<v8::Number> code = Nan::New(
+    list_tar_entries(std::string(*tarname), size, verbose));
+
+    info.GetReturnValue().Set(code);
 }
 
 void init(v8::Local<v8::Object> exports) {
@@ -85,6 +104,9 @@ void init(v8::Local<v8::Object> exports) {
 
     exports->Set(Nan::New("extract_tar_entries").ToLocalChecked(),
     Nan::New<v8::FunctionTemplate>(export_extract_tar_entries)->GetFunction());
+
+    exports->Set(Nan::New("list_tar_entries").ToLocalChecked(),
+    Nan::New<v8::FunctionTemplate>(export_list_tar_entries)->GetFunction());
 }
 
 NODE_MODULE(addon, init)

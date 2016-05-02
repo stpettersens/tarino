@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <ctime>
 #include <algorithm>
 #include "dos2unix.h"
 using namespace std;
@@ -72,6 +73,23 @@ vector<string> split(string str, char delimiter) {
         internal.push_back(token);
     }
     return internal;
+}
+
+string to_date_time(int timestamp) {
+    time_t rawtime = timestamp;
+    struct tm* timeinfo;
+    char datetime[25];
+    timeinfo = localtime(&rawtime);
+    strftime(datetime, 25, "%a %b %d %Y %X", timeinfo);
+    return string(datetime);
+}
+
+string pad_str(string data, int length) {
+  string padding = "";
+  for(int i = 0; i < length - (int)data.length(); i++) {
+    padding.append(" ");
+  }
+  return padding.append(data);
 }
 
 bool file_exists(const char* filename) {
@@ -286,7 +304,7 @@ int write_tar_entries(string tarname, string manifest) {
     return 0;
 }
 
-void extract_entry(string tarname, int i, int overwrite, int verbose) {
+void extract_entry(string tarname, int i, int overwrite, int verbose, int extract) {
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
     char* filename = new char[100];
@@ -306,23 +324,30 @@ void extract_entry(string tarname, int i, int overwrite, int verbose) {
     char* contents = new char[atoi(size)];
     tar.seekg(i + 512); tar.read(contents, atoi(size));
     tar.close();
-
-    if(verbose == 1) {
+    
+    if(verbose == 1 && extract == 1) {
         cout << filename << endl;
     }
+    else {
+        cout << atoi(mode) << "  " << pad_str(to_string(atoi(size)), 10) << "  ";
+        cout << to_date_time(stol(string(modified), nullptr, 8)) << "  " << filename << endl;
+    }
 
-    if(string(type) == "5") {
+    if(string(type) == "5" && extract == 1) {
         string command = "mkdir ";
         #ifdef __unix__
         command.append("-p ");
         #else
-        std::replace(filename.begin(), s.end(), '/', '\\')
+        std::replace(filename.begin(), filename.end(), '/', '\\')
         #endif
         command.append(filename);
-        system(command.c_str());
+        int ec = system(command.c_str());
+        if(ec == 1) {
+          cout << "tarino-native: Exit code from system call was 1" << endl;
+        }
     }
 
-    if (string(type) == "0") {
+    if(string(type) == "0" && extract == 1) {
         if(overwrite || !file_exists(filename)) {
             ofstream out;
             out.open(filename, ofstream::out | ofstream::binary);
@@ -332,25 +357,43 @@ void extract_entry(string tarname, int i, int overwrite, int verbose) {
     }
 }
 
-int extract_tar_entries(string tarname, int size, int overwrite, int verbose) {
+vector<int> get_entry_offsets(string tarname, int size) {
     vector<int> offsets;
     char* magic = new char[5];
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
-    for(int i = 257; i <= size; i++) { // size
+    for(int i = 257; i <= size; i++) {
         tar.seekg(i); tar.read(magic, 6);
         if(string(magic) == "ustar" || string(magic) == "ustar ") {
             offsets.push_back((i + 249) - 506);
         }
     }
     tar.close();
+    return offsets;
+}
 
-    if (verbose == 1) {
-        cout << "tarino-native: Extracting " << offsets.size() << " entries from archive." << endl;
+int extract_tar_entries(string tarname, int size, int overwrite, int verbose) {
+    vector<int> offsets = get_entry_offsets(tarname, size);
+    if(verbose == 1) {
+        cout << "tarino-native: Extracting " << offsets.size() << " entries from archive.";
+        cout << endl << endl;
     }
 
     for(int i = 0; i < (int)offsets.size(); i++) {
-        extract_entry(tarname, offsets[i], overwrite, verbose);
+        extract_entry(tarname, offsets[i], overwrite, verbose, 1);
+    }
+    return 0;
+}
+
+int list_tar_entries(string tarname, int size, int verbose) {
+    vector<int> offsets = get_entry_offsets(tarname, size);
+    if(verbose == 1) {
+        cout << "tarino-native: Listing " << offsets.size() << " entries from archive.";
+        cout << endl << endl;
+    }
+
+    for(int i = 0; i < (int)offsets.size(); i++) {
+        extract_entry(tarname, offsets[i], 0, 1, 0);
     }
     return 0;
 }
