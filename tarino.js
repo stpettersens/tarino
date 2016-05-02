@@ -296,7 +296,7 @@ module.exports.createTar = function (tarname, filename, options) {
         truncateNew(tarname, entries)
       }
       if (options && options.verbose) {
-        console.info('Using native: ', USE_NATIVE)
+        console.info('tarino: Creating archive ( native: ', USE_NATIVE, ' )')
         console.log(entries)
       }
       writeTarEntries(tarname, entries)
