@@ -55,13 +55,9 @@ describe('Test tarino 1/2:', function () {
   })
 
   it('Should create archive (tar) using pure JS implementation.', function (done) {
-    if (os.platform() !== 'win32') {
-      console.log('')
-      tarino.createTar(archives[1], sources, {native: false, verbose: true})
-      assert.equal(fs.existsSync(archives[1]), true)
-    } else {
-      console.info('\tSkipping this test on Windows:')
-    }
+    console.log('')
+    tarino.createTar(archives[1], sources, {native: false, verbose: true})
+    assert.equal(fs.existsSync(archives[1]), true)
     done()
   })
 
