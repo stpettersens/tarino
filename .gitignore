@@ -1,6 +1,7 @@
 node_modules/
 build/
 __*
+*.tar
 *_js.tar
 *_na.tar
 *_js.tar.gz
