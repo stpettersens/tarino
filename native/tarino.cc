@@ -334,13 +334,14 @@ void extract_entry(string tarname, int i, int overwrite, int verbose, int extrac
     }
 
     if(string(type) == "5" && extract == 1) {
+        string fn = string(filename);
         string command = "mkdir ";
         #ifdef __unix__
         command.append("-p ");
         #else
-        std::replace(filename.begin(), filename.end(), '/', '\\');
+        std::replace(fn.begin(), fn.end(), '/', '\\');
         #endif
-        command.append(filename);
+        command.append(fn);
         int ec = system(command.c_str());
         if(ec == 1) {
           cout << "tarino-native: Exit code from system call was 1" << endl;
