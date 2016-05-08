@@ -10,4 +10,5 @@ const tarino = require('./tarino')
 // tarino.createTarGz('tarino.tar.gz', ['GPL-LICENSE','MIT-LICENSE'])
 // tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
 // tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, full: false})
-tarino.listTar('tarino.tar', {native: true, verbose: false})
+// tarino.listTar('tarino.tar', {native: true, verbose: false})
+// tarino.createTar('tarino.tar', 'tarino.h', {native: true, verbose: true});
