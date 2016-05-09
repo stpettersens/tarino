@@ -149,7 +149,7 @@ string calc_checksum(string header) {
     for(int i = 0; i < (int)header.length(); i++) {
         checksum += (int)header.at(i);
     }
-    return dec_to_padded_octal(checksum - 64, 6); // - 64, 6
+    return dec_to_padded_octal(checksum - 64, 6);
 }
 
 void patch_tar(string temp, int etype, string checksum) {
@@ -305,8 +305,6 @@ int write_tar_entries(string tarname, string manifest) {
 }
 
 void extract_entry(string tarname, int i, int overwrite, int verbose, int extract) {
-    ifstream tar;
-    tar.open(tarname.c_str(), ios::binary);
     char* filename = new char[100];
     char* mode = new char[8];
     char* owner = new char[8];
@@ -315,14 +313,28 @@ void extract_entry(string tarname, int i, int overwrite, int verbose, int extrac
     char* modified = new char[12];
     char* checksum = new char[8];
     char* type = new char[1];
-    tar.seekg(i); tar.read(filename, 99); tar.seekg(i + 100);
-    tar.read(mode, 8);tar.seekg(i + 108); tar.read(owner, 8);
-    tar.seekg(i + 116);tar.read(group, 8); tar.seekg(i + 124);
-    tar.read(size, 12); tar.seekg(i + 136); tar.read(modified, 12);
-    tar.seekg(i + 148);tar.read(checksum, 8); tar.seekg(i + 156);
+
+    ifstream tar;
+    tar.open(tarname.c_str(), ios::binary);
+    tar.seekg(i);
+    tar.read(filename, 99);
+    tar.seekg(i + 100);
+    tar.read(mode, 8);
+    tar.seekg(i + 108);
+    tar.read(owner, 8);
+    tar.seekg(i + 116);
+    tar.read(group, 8);
+    tar.seekg(i + 124);
+    tar.read(size, 12);
+    tar.seekg(i + 136);
+    tar.read(modified, 12);
+    tar.seekg(i + 148);
+    tar.read(checksum, 8);
+    tar.seekg(i + 156);
     tar.read(type, 2);
     char* contents = new char[atoi(size)];
-    tar.seekg(i + 512); tar.read(contents, atoi(size));
+    tar.seekg(i + 512);
+    tar.read(contents, atoi(size));
     tar.close();
 
     if(verbose == 1 && extract == 1) {
@@ -344,12 +356,12 @@ void extract_entry(string tarname, int i, int overwrite, int verbose, int extrac
         command.append(fn);
         int ec = system(command.c_str());
         if(ec == 1) {
-          cout << "tarino-native: Exit code from system call was 1" << endl;
+          cout << "tarino-native: Exit code from system call was 1." << endl;
         }
     }
 
     if(string(type) == "0" && extract == 1) {
-        if(overwrite || !file_exists(filename)) {
+        if(overwrite == 1 || !file_exists(filename)) {
             ofstream out;
             out.open(filename, ofstream::out | ofstream::binary);
             out << contents;
@@ -364,7 +376,8 @@ vector<int> get_entry_offsets(string tarname, int size) {
     ifstream tar;
     tar.open(tarname.c_str(), ios::binary);
     for(int i = 257; i <= size; i++) {
-        tar.seekg(i); tar.read(magic, 6);
+        tar.seekg(i);
+        tar.read(magic, 6);
         if(string(magic) == "ustar" || string(magic) == "ustar ") {
             offsets.push_back((i + 249) - 506);
         }
