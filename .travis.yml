@@ -3,9 +3,8 @@ notifications:
 
 language: node_js
 node_js:
-  #- '5.1'
-  - '4.2'
-  - 'iojs'
+  - '6.2'
+  - '5.1'
 env:
   - CXX=g++-4.8
 addons:
