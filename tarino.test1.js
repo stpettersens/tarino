@@ -39,13 +39,13 @@ describe('Test tarino 1/2:', function () {
     done()
   })
 
-  it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
+  /* it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
     console.log('')
     tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, fall: true})
     assert.equal(fs.existsSync(licenses[0]), true)
     assert.equal(fs.existsSync(licenses[1]), true)
     done()
-  })
+  }) */
 
   it('Should create archive (tar) using native implementation.', function (done) {
     console.log('')

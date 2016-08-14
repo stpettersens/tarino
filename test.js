@@ -8,7 +8,7 @@ const tarino = require('./tarino')
 // tarino.extractTar('__tarino.tar__', {native: true, verbose: true})
 // tarino.createTarGz('tarino.tar.gz', 'native', {folder: true, native: true})
 // tarino.createTarGz('tarino.tar.gz', ['GPL-LICENSE','MIT-LICENSE'])
-// tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
+tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true})
 // tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, full: false})
 // tarino.listTar('tarino.tar', {native: true, verbose: false})
 // tarino.createTar('tarino.tar', 'tarino.h', {native: true, verbose: true});
