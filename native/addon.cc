@@ -10,7 +10,7 @@
 
 #include <nan.h>
 #include <string>
-#include "tarino.h"
+#include "tarino.hpp"
 
 void export_write_tar_entry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (info.Length() < 5) {

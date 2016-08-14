@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
-#include "dos2unix.h"
+#include "dos2unix.hpp"
 using namespace std;
 
 static int EOF_PADDING = 512;
