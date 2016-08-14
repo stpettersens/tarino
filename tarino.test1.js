@@ -35,13 +35,13 @@ describe('Test tarino 1/2:', function () {
 
   it('Should extract gzipped archive (tar.gz) using native implementation.', function (done) {
     console.log('')
-    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true}) //, full: false})
+    tarino.extractTarGz('tarino.tar.gz', {native: true, verbose: true, full: false})
     done()
   })
 
   /* it('Should extract gzipped archive (tar.gz) using pure JS implementation.', function (done) {
     console.log('')
-    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, fall: true})
+    tarino.extractTarGz('tarino.tar.gz', {native: false, verbose: true, full: true})
     assert.equal(fs.existsSync(licenses[0]), true)
     assert.equal(fs.existsSync(licenses[1]), true)
     done()
