@@ -7,7 +7,6 @@ Native add-on.
 Released under the MIT License;
 see MIT-LICENSE file.
 */
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
