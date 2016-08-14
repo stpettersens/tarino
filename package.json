@@ -1,5 +1,5 @@
 {
-  "name": "tarino",
+  "name": "ssp-tarino",
   "version": "0.1.1",
   "description": "A tar implementation with Node.js.",
   "main": "tarino.js",
