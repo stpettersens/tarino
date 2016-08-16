@@ -8,7 +8,7 @@
 
 ##### Install
 
-- `npm install tarino --production`
+- `npm install ssp-tarino --production`
 
 ##### Tests
 
@@ -22,12 +22,12 @@ and then run:
 ```js
 'use strict'
 
-const tarino = require('tarino')
+const tarino = require('ssp-tarino')
 tarino.createTar('control.tar', 'control') // --> Create regular Tar.
 tarino.extractTar('control.tar') // --> Extract regular Tar.
 
 tarino.createTarGz('control.tar.gz', 'control') // --> Create gzipped Tar.
-tarino.extractTarGz('control.tar.gz') // --> Extract regular Tar.
+tarino.extractTarGz('control.tar.gz') // --> Extract gzipped Tar.
 ```
 
 ##### Other requirements
