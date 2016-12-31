@@ -14,7 +14,6 @@ const EOF_PADDING = 512
 let USE_NATIVE = false
 
 const fs = require('fs-extra')
-// const mkdirp = require('mkdirp')
 const conv = require('binstring')
 const zlib = require('zlib')
 const os = require('os')
