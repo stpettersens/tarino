@@ -8,8 +8,8 @@ lua-5.3.2/
 lua-5.3.2.tar.gz
 ruby-2.3.1.tar.gz
 *.tgz
-.gitignore
 .npmignore
+.gitignore
 *.yml
 *test*.js
 test.js
