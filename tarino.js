@@ -14,7 +14,7 @@ const EOF_PADDING = 512
 let USE_NATIVE = false
 
 const fs = require('fs-extra')
-const mkdirp = require('mkdirp')
+// const mkdirp = require('mkdirp')
 const conv = require('binstring')
 const zlib = require('zlib')
 const os = require('os')
@@ -373,7 +373,7 @@ function extractEntry (tar, o, options, extract) {
   }
 
   if (type === 5 && extract) {
-    mkdirp.sync(fn)
+    fs.mkdirpSync(fn)
   }
 
   let contents = ''
